@@ -1,3 +1,8 @@
+
+[![MIT License][license-shield]][license-url]
+<!-- [![Release][release-shield]][release-url] -->
+
+
 # Read the ABSCAL.HIS file and visualize the results of the absolute calibration with liquid nitrogen of an RPG microwave radiometer
 
 <!-- TABLE OF CONTENTS -->
@@ -6,7 +11,7 @@
   <ol>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#usage">Usage</a></li>
+    <li><a href="#Example">Example</a></li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <!-- <li><a href="#contributing">Contributing</a></li> -->
     <li><a href="#license">License</a></li>
@@ -18,7 +23,7 @@
 <!-- Introduction -->
 ## Introduction
 
-<img src="results_ln2_cal.png" width="70%">
+This repository was created to display the results of the absolute calibration with liquid nitrogen of the microwave radiometer HATPRO manufactured by Radiometer Physics GmbH. For this purpose, the binary file ABSCAL.HIS is read in and converted into an xarray. Then the receiver gain, the temperature of the noise diode, the temperature of the system noise and the non-linearity factor are displayed in comparison to the previous and other prior calibrations.
 
 <!-- GETTING STARTED -->
 ## Getting Started
@@ -27,7 +32,7 @@
 ## Installation
 
 
-_Below is an example of how run the example script, which prepares the data, makes predictions and plots quicklooks. This method relies on external dependencies such as torch, xarray and others (see `setup.py`)._
+Below is an example of how run the script, which reads in the data and plots the results. This method relies on external dependencies such as xarray, numpy and others (see `setup.py`).
 
 1. Clone the repo
    ```sh
@@ -48,8 +53,9 @@ _Below is an example of how run the example script, which prepares the data, mak
    ```sh
    jupyter notebook
    ```
-2. Open one of the example files `Voodoo_predictor_KAZR.ipynb`or `Voodoo_predictor_RPG-FMCW94.ipynb` to review the processing chain.
+2. Open the 'evaluate_absolute_calibration.ipynb' notebook, see the processing and the results.
 
+<img src="results_ln2_cal.png" width="70%">
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
