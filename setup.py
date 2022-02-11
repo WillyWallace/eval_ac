@@ -10,5 +10,6 @@ setup(name='read_and_visualize_abscal-his',
       url='https://github.com/WillyWallace/read_and_visualize_abscal-his.git',
       license='MIT',
       packages=[],
-      install_requires=[numpy>=1.22.2, xarray>=0.21.1, datetime, matplotlib ],
+      python_requires=3.7,
+      install_requires=[numpy>=1.22.2, xarray>=0.21.1, datetime, matplotlib, collections],
      )
