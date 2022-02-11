@@ -18,7 +18,7 @@
 <!-- Introduction -->
 ## Introduction
 
-<img src="results_ln2_cal.png" width="200">
+<img src="results_ln2_cal.png" width="70%">
 
 <!-- GETTING STARTED -->
 ## Getting Started
