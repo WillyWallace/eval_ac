@@ -16,6 +16,7 @@ class HatproBinAbscalHis:
         self.xrdata = self.aff_global_attrs()
 
     def aff_global_attrs(self):
+        """Adds global attributes"""
         self.xrdata.attrs['history'] = 'Data converted from ' + self.filename
         self.xrdata.attrs['source'] = 'micorwave radiometer '
         + 'manufactured by Radiometer Physics GmbH (RPG)'
@@ -26,6 +27,7 @@ class HatproBinAbscalHis:
         return self.xrdata
 
     def add_var_attrs(self):
+        """Adds attributes"""
         for vars in self.xrdata.data_vars:
             add_attrs(vars, ATTRIBUTES, FIELDS, self.xrdata)
 
@@ -105,7 +107,6 @@ class HatproBinAbscalHis:
                               dtype=np.float32).tolist(),
         }
 
-
         for sample in range(self.header['_n_samples'][0]):
             data['entry_len'][sample] = np.fromfile(file, np.int32, 1),
             data['radiometer_id'][sample] = np.fromfile(file, np.int32, 1),
@@ -130,7 +131,7 @@ class HatproBinAbscalHis:
 
             data['N_rec_1'][sample] = np.fromfile(file, np.int32, 1),
             data['Freq_rec_1'][sample] = np.fromfile(
-                file, np.float32, 
+                file, np.float32,
                 int(data['N_rec_1'][sample][0])),
             data['N_rec_2'][sample] = np.fromfile(file, np.int32, 1),
             data['Freq_rec_2'][sample] = np.fromfile(
@@ -156,66 +157,101 @@ class HatproBinAbscalHis:
             data['alpha'][sample] = np.fromfile(
                 file, np.float32,
                 int(data['N_rec_1'][sample][0])
-                + int(data['N_rec_2'][sample][0])
-                
+                + int(data['N_rec_2'][sample][0]))
+
         file.close()
-        
+
         return data
 
     def convert_to_xarray(self):
+        """Converts dict to xarray"""
         ds = xr.Dataset(
             {
-                'radiometer_id' : (['n_samples'], np.asarray(self.data['radiometer_id'])[:,0,0]),
-                'cal_type_1': (['n_samples'], np.asarray(self.data['cal_type_1'])[:,0,0]),
-                'cal_type_2': (['n_samples'], np.asarray(self.data[ 'cal_type_2'])[:,0,0]),
-                'time_of_rec_1': (['n_samples'], np.asarray(self.data['time_of_rec_1'])[:,0,0]),
-                'time_of_rec_2': (['n_samples'], np.asarray(self.data['time_of_rec_2'])[:,0]),
-                'amb_temp_1': (['n_samples'], np.asarray(self.data['Amb_temp_1'])[:,0,0]),
-                'amb_temp_2': (['n_samples'], np.asarray(self.data['Amb_temp_2'])[:,0,0]),
-                'press_1': (['n_samples'], np.asarray(self.data['press_1'])[:,0,0]),
-                'press_2': (['n_samples'], np.asarray(self.data['press_2'])[:,0,0]),
+                'radiometer_id': (['n_samples'],
+                                  np.asarray(
+                                      self.data['radiometer_id'])[:, 0, 0]),
+                'cal_type_1': (['n_samples'],
+                               np.asarray(
+                                   self.data['cal_type_1'])[:, 0, 0]),
+                'cal_type_2': (['n_samples'],
+                               np.asarray(
+                                   self.data['cal_type_2'])[:, 0, 0]),
+                'time_of_rec_1': (['n_samples'],
+                                  np.asarray(
+                                      self.data['time_of_rec_1'])[:, 0, 0]),
+                'time_of_rec_2': (['n_samples'],
+                                  np.asarray(
+                                      self.data['time_of_rec_2'])[:, 0]),
+                'amb_temp_1': (['n_samples'],
+                               np.asarray(
+                                   self.data['Amb_temp_1'])[:, 0, 0]),
+                'amb_temp_2': (['n_samples'],
+                               np.asarray(self.data['Amb_temp_2'])[:, 0, 0]),
+                'press_1': (['n_samples'],
+                            np.asarray(self.data['press_1'])[:, 0, 0]),
+                'press_2': (['n_samples'],
+                            np.asarray(self.data['press_2'])[:, 0, 0]),
 
-                'hot_load_temp_1': (['n_samples'], np.asarray(self.data['hot_load_temp_1'])[:,0,0]),
-                'hot_load_temp_2': (['n_samples'], np.asarray(self.data['hot_load_temp_2'])[:,0,0]),
-                'cold_load_temp_1': (['n_samples'], np.asarray(self.data['cold_load_temp_1'])[:,0,0]),
-                'cold_load_temp_2': (['n_samples'], np.asarray(self.data['cold_load_temp_2'])[:,0,0]),
+                'hot_load_temp_1': (['n_samples'],
+                                    np.asarray(
+                                        self.data['hot_load_temp_1']
+                                    )[:, 0, 0]),
+                'hot_load_temp_2': (['n_samples'],
+                                    np.asarray(
+                                        self.data['hot_load_temp_2']
+                                    )[:, 0, 0]),
+                'cold_load_temp_1': (['n_samples'],
+                                     np.asarray(
+                                         self.data['cold_load_temp_1']
+                                     )[:, 0, 0]),
+                'cold_load_temp_2': (['n_samples'],
+                                     np.asarray(
+                                         self.data['cold_load_temp_2']
+                                     )[:, 0, 0]),
 
-                'calibration_flag': (['n_samples', 'freq'], np.asarray(self.data['flag'])[:,0,:]),   
-                'gain': (['n_samples', 'freq'], np.asarray(self.data['gain'])[:,:]),
-                'temp_noise': (['n_samples', 'freq'], np.asarray(self.data['temp_noise'])[:,:]),
-                'temp_sys': (['n_samples', 'freq'], np.asarray(self.data['temp_sys'])[:,:]),
-                'alpha': (['n_samples', 'freq'], np.asarray(self.data['alpha'])[:,:]),
+                'calibration_flag': (['n_samples', 'freq'],
+                                     np.asarray(self.data['flag'])[:, 0, :]),
+                'gain': (['n_samples', 'freq'],
+                         np.asarray(self.data['gain'])[:, :]),
+                'temp_noise': (['n_samples', 'freq'],
+                               np.asarray(self.data['temp_noise'])[:, :]),
+                'temp_sys': (['n_samples', 'freq'],
+                             np.asarray(self.data['temp_sys'])[:, :]),
+                'alpha': (['n_samples', 'freq'],
+                          np.asarray(self.data['alpha'])[:, :]),
             },
-            coords = {
-                'n_samples' : np.arange(self.header['_n_samples'][0]),
+            coords={
+                'n_samples': np.arange(self.header['_n_samples'][0]),
 
-                #'freq_rec_1' : np.asarray(self.data['Freq_rec_1'])[0,0,:],
-                #'freq_rec_2' : np.asarray(self.data['Freq_rec_2'])[0,0,:],
-                'freq' : np.concatenate((np.asarray(self.data['Freq_rec_1'])[0,0,:], np.asarray(self.data['Freq_rec_2'])[0,0,:]), axis=None),
+                # 'freq_rec_1' : np.asarray(self.data['Freq_rec_1'])[0,0,:],
+                # 'freq_rec_2' : np.asarray(self.data['Freq_rec_2'])[0,0,:],
+                'freq': np.concatenate(
+                    (np.asarray(self.data['Freq_rec_1'])[0, 0, :],
+                     np.asarray(self.data['Freq_rec_2'])[0, 0, :]), axis=None),
 
             }
         )
-        
+
         return ds
-        
- 
+
     def _get_hatpro_version(self) -> int:
+        """Get HATPRO version"""
         if self.header['file_code'][0] == 39583209:
             return 1
-        #if self.header['file_code'][0] == 934501000:
-        #    return 2
-        raise ValueError(f'Unknown HATPRO version. {self.header["file_code"][0]}')
+        # if self.header['file_code'][0] == 934501000:
+            # return 2
+        raise ValueError('Unknown HATPRO version.'
+                         + f'{self.header["file_code"][0]}')
+
 
 def add_attrs(vars, ATTRIBUTES, FIELDS, ds):
+    """Loop over attributes"""
     if vars in ATTRIBUTES:
-        j=0
+        j = 0
         for i in ATTRIBUTES[vars]:
-            if i != None:
-                #print(FIELDS[j])
-                #print(i)
+            if i is not None:
+                # print(FIELDS[j])
+                # print(i)
                 ds[vars].attrs[FIELDS[j]] = i
-            j=j+1
+            j = j + 1
     return ds
-
-
-
