@@ -1,5 +1,5 @@
 
-[![MIT License][license-shield]][license-url]
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- [![Release][release-shield]][release-url] -->
 
 

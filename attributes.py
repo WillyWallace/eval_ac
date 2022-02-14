@@ -107,7 +107,7 @@ ATTRIBUTES = {
     'cold_load_temp_2': MetaData(
         long_name='hot load temperature receiver 2',
         units='K'
-    ),    
+    ),
     'N_rec_1': MetaData(
         long_name='number of receiver 1 channels',
         units='1'
@@ -115,7 +115,7 @@ ATTRIBUTES = {
     'N_rec_2': MetaData(
         long_name='number of receiver 2 channels',
         units='1'
-    ), 
+    ),
     'freq_rec_1': MetaData(
         long_name='frequencies of receiver 1',
         units='GHz'
@@ -127,7 +127,7 @@ ATTRIBUTES = {
     'freq': MetaData(
         long_name='frequency',
         units='GHz'
-    ), 
+    ),
     'gain': MetaData(
         standard_name='reveiver gain',
         long_name='receiver gain',
@@ -149,7 +149,8 @@ ATTRIBUTES = {
         long_name='calibration flags',
         definition=DEFINITIONS['calibration_flag'],
         units='1',
-        comment='Quality information as an 8 bit array. See RPG HATPRO manual for more information.'
+        comment='Quality information as an 8 bit array.'
+        + ' See RPG HATPRO manual for more information.'
     )
 
 }

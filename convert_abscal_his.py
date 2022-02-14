@@ -8,31 +8,31 @@ class HatproBinAbscalHis:
     """HATPRO binary file reader."""
     def __init__(self, filename):
         self.filename = filename
-        #self._file_position = 0
+        # self._file_position = 0
         self.header = self.read_header()
         self.data = self.read_data()
         self.xrdata = self.convert_to_xarray()
         self.xrdata = self.add_var_attrs()
         self.xrdata = self.aff_global_attrs()
-        
+
     def aff_global_attrs(self):
         self.xrdata.attrs['history'] = 'Data converted from ' + self.filename
-        self.xrdata.attrs['source'] = 'micorwave radiometer manufactured by Radiometer Physics GmbH (RPG)'
+        self.xrdata.attrs['source'] = 'micorwave radiometer '
+        + 'manufactured by Radiometer Physics GmbH (RPG)'
         self.xrdata.attrs['comments'] = ''
         self.xrdata.attrs['conventions'] = 'CF-1.8'
-        self.xrdata.attrs['date of creation'] = str(datetime.datetime.utcnow())  
-        
+        self.xrdata.attrs['date of creation'] = str(datetime.datetime.utcnow())
+
         return self.xrdata
-        
-    def add_var_attrs(self):   
+
+    def add_var_attrs(self):
         for vars in self.xrdata.data_vars:
             add_attrs(vars, ATTRIBUTES, FIELDS, self.xrdata)
 
         for vars in self.xrdata.coords:
             add_attrs(vars, ATTRIBUTES, FIELDS, self.xrdata)
-        
+
         return self.xrdata
-            
 
     def read_header(self) -> dict:
         """Reads the header."""
@@ -51,41 +51,65 @@ class HatproBinAbscalHis:
         file.seek(self._file_position)
 
         data = {
-            'entry_len': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'radiometer_id': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'cal_type_1': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'cal_type_2': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'time_of_rec_1': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'time_of_rec_2': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'Amb_temp_1': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'Amb_temp_2': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'press_1': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'press_2': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            
-            'hot_load_temp_1': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'hot_load_temp_2': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'cold_load_temp_1': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            'cold_load_temp_2': np.zeros(self.header['_n_samples'], dtype=np.float32).tolist(),
-            
-            'Spare': np.zeros((self.header['_n_samples'][0], 5), dtype=np.float32).tolist(),
-            
-            'N_rec_1': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'Freq_rec_1': np.zeros((self.header['_n_samples'][0], 14), dtype=np.float32).tolist(),
-            'N_rec_2': np.zeros(self.header['_n_samples'], dtype=np.int32).tolist(),
-            'Freq_rec_2': np.zeros((self.header['_n_samples'][0], 14), dtype=np.float32).tolist(),   
-            
-            'flag': np.zeros((self.header['_n_samples'][0], 28), dtype=np.int32).tolist(),   
-            'gain': np.zeros((self.header['_n_samples'][0], 28), dtype=np.float32).tolist(),   
-            'temp_noise': np.zeros((self.header['_n_samples'][0], 28), dtype=np.float32).tolist(),   
-            'temp_sys': np.zeros((self.header['_n_samples'][0], 28), dtype=np.float32).tolist(),   
-            'alpha': np.zeros((self.header['_n_samples'][0], 28), dtype=np.float32).tolist(),   
+            'entry_len': np.zeros(self.header['_n_samples'],
+                                  dtype=np.int32).tolist(),
+            'radiometer_id': np.zeros(self.header['_n_samples'],
+                                      dtype=np.int32).tolist(),
+            'cal_type_1': np.zeros(self.header['_n_samples'],
+                                   dtype=np.int32).tolist(),
+            'cal_type_2': np.zeros(self.header['_n_samples'],
+                                   dtype=np.int32).tolist(),
+            'time_of_rec_1': np.zeros(self.header['_n_samples'],
+                                      dtype=np.int32).tolist(),
+            'time_of_rec_2': np.zeros(self.header['_n_samples'],
+                                      dtype=np.int32).tolist(),
+            'Amb_temp_1': np.zeros(self.header['_n_samples'],
+                                   dtype=np.float32).tolist(),
+            'Amb_temp_2': np.zeros(self.header['_n_samples'],
+                                   dtype=np.float32).tolist(),
+            'press_1': np.zeros(self.header['_n_samples'],
+                                dtype=np.float32).tolist(),
+            'press_2': np.zeros(self.header['_n_samples'],
+                                dtype=np.float32).tolist(),
+
+            'hot_load_temp_1': np.zeros(self.header['_n_samples'],
+                                        dtype=np.float32).tolist(),
+            'hot_load_temp_2': np.zeros(self.header['_n_samples'],
+                                        dtype=np.float32).tolist(),
+            'cold_load_temp_1': np.zeros(self.header['_n_samples'],
+                                         dtype=np.float32).tolist(),
+            'cold_load_temp_2': np.zeros(self.header['_n_samples'],
+                                         dtype=np.float32).tolist(),
+
+            'Spare': np.zeros((self.header['_n_samples'][0], 5),
+                              dtype=np.float32).tolist(),
+
+            'N_rec_1': np.zeros(self.header['_n_samples'],
+                                dtype=np.int32).tolist(),
+            'Freq_rec_1': np.zeros((self.header['_n_samples'][0], 14),
+                                   dtype=np.float32).tolist(),
+            'N_rec_2': np.zeros(self.header['_n_samples'],
+                                dtype=np.int32).tolist(),
+            'Freq_rec_2': np.zeros((self.header['_n_samples'][0], 14),
+                                   dtype=np.float32).tolist(),
+
+            'flag': np.zeros((self.header['_n_samples'][0], 28),
+                             dtype=np.int32).tolist(),
+            'gain': np.zeros((self.header['_n_samples'][0], 28),
+                             dtype=np.float32).tolist(),
+            'temp_noise': np.zeros((self.header['_n_samples'][0], 28),
+                                   dtype=np.float32).tolist(),
+            'temp_sys': np.zeros((self.header['_n_samples'][0], 28),
+                                 dtype=np.float32).tolist(),
+            'alpha': np.zeros((self.header['_n_samples'][0], 28),
+                              dtype=np.float32).tolist(),
         }
 
-                
+
         for sample in range(self.header['_n_samples'][0]):
             data['entry_len'][sample] = np.fromfile(file, np.int32, 1),
             data['radiometer_id'][sample] = np.fromfile(file, np.int32, 1),
-            
+
             data['cal_type_1'][sample] = np.fromfile(file, np.int32, 1),
             data['cal_type_2'][sample] = np.fromfile(file, np.int32, 1),
             data['time_of_rec_1'][sample] = np.fromfile(file, np.int32, 1),
@@ -97,24 +121,45 @@ class HatproBinAbscalHis:
 
             data['hot_load_temp_1'][sample] = np.fromfile(file, np.float32, 1),
             data['hot_load_temp_2'][sample] = np.fromfile(file, np.float32, 1),
-            data['cold_load_temp_1'][sample] = np.fromfile(file, np.float32, 1),
-            data['cold_load_temp_2'][sample] = np.fromfile(file, np.float32, 1),
-            
+            data['cold_load_temp_1'][sample] = np.fromfile(file,
+                                                           np.float32, 1),
+            data['cold_load_temp_2'][sample] = np.fromfile(file,
+                                                           np.float32, 1),
+
             data['Spare'][sample] = np.fromfile(file, np.float32, 5),
 
             data['N_rec_1'][sample] = np.fromfile(file, np.int32, 1),
-            data['Freq_rec_1'][sample] = np.fromfile(file, np.float32, int(data['N_rec_1'][sample][0])),
+            data['Freq_rec_1'][sample] = np.fromfile(
+                file, np.float32, 
+                int(data['N_rec_1'][sample][0])),
             data['N_rec_2'][sample] = np.fromfile(file, np.int32, 1),
-            data['Freq_rec_2'][sample] = np.fromfile(file, np.float32, int(data['N_rec_2'][sample][0])),
-            
-            data['flag'][sample] = np.fromfile(file, np.int32, int(data['N_rec_1'][sample][0]) + int(data['N_rec_2'][sample][0])),
-            data['gain'][sample] = np.fromfile(file, np.float32, int(data['N_rec_1'][sample][0]) + int(data['N_rec_2'][sample][0]))
-            data['temp_noise'][sample] = np.fromfile(file, np.float32, int(data['N_rec_1'][sample][0]) + int(data['N_rec_2'][sample][0]))
-            data['temp_sys'][sample] = np.fromfile(file, np.float32, int(data['N_rec_1'][sample][0]) + int(data['N_rec_2'][sample][0]))
-            data['alpha'][sample] = np.fromfile(file, np.float32, int(data['N_rec_1'][sample][0]) + int(data['N_rec_2'][sample][0]))
+            data['Freq_rec_2'][sample] = np.fromfile(
+                file, np.float32,
+                int(data['N_rec_2'][sample][0])),
 
-
+            data['flag'][sample] = np.fromfile(
+                file, np.int32,
+                int(data['N_rec_1'][sample][0])
+                + int(data['N_rec_2'][sample][0])),
+            data['gain'][sample] = np.fromfile(
+                file, np.float32,
+                int(data['N_rec_1'][sample][0])
+                + int(data['N_rec_2'][sample][0]))
+            data['temp_noise'][sample] = np.fromfile(
+                file, np.float32,
+                int(data['N_rec_1'][sample][0])
+                + int(data['N_rec_2'][sample][0]))
+            data['temp_sys'][sample] = np.fromfile(
+                file, np.float32,
+                int(data['N_rec_1'][sample][0])
+                + int(data['N_rec_2'][sample][0]))
+            data['alpha'][sample] = np.fromfile(
+                file, np.float32,
+                int(data['N_rec_1'][sample][0])
+                + int(data['N_rec_2'][sample][0])
+                
         file.close()
+        
         return data
 
     def convert_to_xarray(self):
@@ -171,4 +216,6 @@ def add_attrs(vars, ATTRIBUTES, FIELDS, ds):
                 ds[vars].attrs[FIELDS[j]] = i
             j=j+1
     return ds
+
+
 
