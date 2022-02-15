@@ -1,6 +1,8 @@
 [![Python package](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/python-package.yml/badge.svg)](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/python-package.yml)
 [![Pylint](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml/badge.svg)](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://GitHub.com/Naereen/StrapDown.js/releases/)
+
 <!-- [![Release][release-shield]][release-url] -->
 <!-- [![PyPi version](https://badgen.net/pypi/v/pip/)](https://pypi.com/project/pip) -->
 
