@@ -13,7 +13,7 @@
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
     <li><a href="#Usage">Usage</a></li>
-    <!-- <li><a href="#roadmap">Roadmap</a></li> -->
+    <li><a href="#roadmap">Roadmap</a></li>
     <!-- <li><a href="#contributing">Contributing</a></li> -->
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
@@ -60,6 +60,18 @@ Below is an example of how run the script, which reads in the data and plots the
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+<!-- ROADMAP -->
+## Roadmap
+
+- [ ] add meaningful docstrings
+- [ ] make documentation --> readthedocs
+- [ ] enable pip install ...
+- [ ] Released version 1
+- [ ] Add Tests
+
+See the [open issues](https://github.com/KarlJohnsonnn/Voodoo/blob/release_v1/issues) for a full list of proposed features (and known issues).
+
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- LICENSE -->
 ## License
