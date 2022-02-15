@@ -1,3 +1,4 @@
+[![Pylint](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml/badge.svg)](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- [![Release][release-shield]][release-url] -->
