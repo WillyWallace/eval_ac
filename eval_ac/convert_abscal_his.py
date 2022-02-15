@@ -3,7 +3,7 @@
 import datetime
 import numpy as np
 import xarray as xr
-from eval_ac.attributes import FIELDS, ATTRIBUTES
+from utils.attributes import FIELDS, ATTRIBUTES
 
 
 class HatproBinAbscalHis:
