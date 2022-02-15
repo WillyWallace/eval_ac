@@ -3,7 +3,8 @@
 import datetime
 import numpy as np
 import xarray as xr
-from utils.attributes import FIELDS, ATTRIBUTES
+from eval_ac.utils.attributes import FIELDS, ATTRIBUTES
+
 
 class HatproBinAbscalHis:
     """HATPRO binary file reader."""
