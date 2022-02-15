@@ -1,12 +1,12 @@
-#!/usr/bin/env python
+""" docstring """
 
 from setuptools import setup, find_packages
 
 setup(name='read_and_visualize_abscal-his',
       version='1.0',
       description=str('reads the ABSCAL.HIS fiel and visualizes the results of '
-                + 'the absolute calibration of the microwave radiometer '
-                + 'HATPRO with liquid nitrogen'),
+                      + 'the absolute calibration of the microwave radiometer '
+                      + 'HATPRO with liquid nitrogen'),
       author='Andreas Foth',
       author_email='andreas.foth@uni-leipzig.de',
       url='https://github.com/WillyWallace/read_and_visualize_abscal-his.git',
@@ -21,5 +21,5 @@ setup(name='read_and_visualize_abscal-his',
         "Operating System :: OS Independent",
         "Intended Audience :: Science/Research",
         "Topic :: Scientific/Engineering",
-    ],
-)
+          ],
+      )
