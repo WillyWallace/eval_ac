@@ -1,5 +1,5 @@
 """
-evaluate the absolute calibration with liquid nitrogen of an 
+evaluate the absolute calibration with liquid nitrogen of an
 Radiometer Physics GmbH (RPG) microwave radiometer HATPRO.
 """
 
