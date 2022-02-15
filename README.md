@@ -12,7 +12,7 @@
   <ol>
     <li><a href="#Introduction">Introduction</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
-    <li><a href="#Example">Example</a></li>
+    <li><a href="#Usage">Usage</a></li>
     <!-- <li><a href="#roadmap">Roadmap</a></li> -->
     <!-- <li><a href="#contributing">Contributing</a></li> -->
     <li><a href="#license">License</a></li>
@@ -48,7 +48,7 @@ Below is an example of how run the script, which reads in the data and plots the
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
-## Examples
+## Usage
 
 1. Open jupyter notebook
    ```sh
