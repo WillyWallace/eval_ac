@@ -2,7 +2,7 @@
 [![Pylint](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml/badge.svg)](https://github.com/WillyWallace/read_and_visualize_abscal-his/actions/workflows/pylint.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- [![Release][release-shield]][release-url] -->
-
+[![Twitter](https://img.shields.io/twitter/follow/RSAtmos_LIM?style=for-the-badge)](https://twitter.com/RSAtmos_LIM)
 
 # Read the ABSCAL.HIS file and visualize the results of the absolute calibration with liquid nitrogen of an RPG microwave radiometer
 
