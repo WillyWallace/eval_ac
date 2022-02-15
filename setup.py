@@ -13,7 +13,7 @@ setup(name='read_and_visualize_abscal-his',
       license='MIT',
       packages=find_packages(),
       python_requires='>=3.6',
-      install_requires=['numpy', 'xarray', 'datetime', 'matplotlib', 'collections'],
+      install_requires=['numpy', 'xarray', 'datetime', 'matplotlib'],
       classifiers=[
         "Development Status :: 1 - Beta",
         "Programming Language :: Python :: 3.6",
