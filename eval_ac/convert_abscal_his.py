@@ -5,7 +5,6 @@ import numpy as np
 import xarray as xr
 from utils.attributes import FIELDS, ATTRIBUTES
 
-
 class HatproBinAbscalHis:
     """HATPRO binary file reader."""
 
