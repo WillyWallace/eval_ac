@@ -1,3 +1,4 @@
+"""This files contains the meta data definitions"""
 from collections import namedtuple
 
 FIELDS = (

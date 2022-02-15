@@ -1,3 +1,5 @@
+"""This file contains the read and conversion routines"""
+
 import datetime
 import numpy as np
 import xarray as xr
