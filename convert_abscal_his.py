@@ -1,11 +1,12 @@
+import datetime
 import numpy as np
 import xarray as xr
-import datetime
 from attributes import FIELDS, ATTRIBUTES
 
 
 class HatproBinAbscalHis:
     """HATPRO binary file reader."""
+
     def __init__(self, filename):
         self.filename = filename
         # self._file_position = 0
@@ -18,8 +19,8 @@ class HatproBinAbscalHis:
     def aff_global_attrs(self):
         """Adds global attributes"""
         self.xrdata.attrs['history'] = 'Data converted from ' + self.filename
-        self.xrdata.attrs['source'] = 'micorwave radiometer '
-        + 'manufactured by Radiometer Physics GmbH (RPG)'
+        self.xrdata.attrs['source'] = str('micorwave radiometer manufactured '
+                                        + 'by Radiometer Physics GmbH (RPG)')
         self.xrdata.attrs['comments'] = ''
         self.xrdata.attrs['conventions'] = 'CF-1.8'
         self.xrdata.attrs['date of creation'] = str(datetime.datetime.utcnow())
@@ -28,11 +29,11 @@ class HatproBinAbscalHis:
 
     def add_var_attrs(self):
         """Adds attributes"""
-        for vars in self.xrdata.data_vars:
-            add_attrs(vars, ATTRIBUTES, FIELDS, self.xrdata)
+        for var in self.xrdata.data_vars:
+            add_attrs(var, ATTRIBUTES, FIELDS, self.xrdata)
 
-        for vars in self.xrdata.coords:
-            add_attrs(vars, ATTRIBUTES, FIELDS, self.xrdata)
+        for var in self.xrdata.coords:
+            add_attrs(var, ATTRIBUTES, FIELDS, self.xrdata)
 
         return self.xrdata
 
@@ -244,14 +245,14 @@ class HatproBinAbscalHis:
                          + f'{self.header["file_code"][0]}')
 
 
-def add_attrs(vars, ATTRIBUTES, FIELDS, ds):
+def add_attrs(var, attrs, field, ds):
     """Loop over attributes"""
-    if vars in ATTRIBUTES:
+    if var in attrs:
         j = 0
-        for i in ATTRIBUTES[vars]:
+        for i in attrs[vars]:
             if i is not None:
                 # print(FIELDS[j])
                 # print(i)
-                ds[vars].attrs[FIELDS[j]] = i
+                ds[var].attrs[field[j]] = i
             j = j + 1
     return ds
