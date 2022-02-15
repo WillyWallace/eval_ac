@@ -71,7 +71,7 @@ Distributed under the MIT License. See `LICENSE` for more information.
 <!-- CONTACT -->
 ## Contact
 
-Andreas Foth - [@WillyWallace](https://www.uni-leipzig.de/personenprofil/mitarbeiter/dr-andreas-foth)
+[Andreas Foth](https://www.uni-leipzig.de/personenprofil/mitarbeiter/dr-andreas-foth)
 
 
 <p align="right">(<a href="#top">back to top</a>)</p>
