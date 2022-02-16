@@ -44,7 +44,7 @@ Below is an example of how run the script, which reads in the data and plots the
 
 1. Clone the repo
    ```sh
-   git clone https://github.com/WillyWallace/read_and_visualize_abscal-his.git
+   git clone https://github.com/WillyWallace/eval_ac.git
    ```
 
 2. Install the package
@@ -63,7 +63,7 @@ Below is an example of how run the script, which reads in the data and plots the
    ```
 2. Open the 'evaluate_absolute_calibration.ipynb' notebook, see the processing and the results.
 
-<img src="eval_ac/results_ln2_cal.png" width="70%">
+<img src="eval_ac/eval_ac/results_ln2_cal.png" width="70%">
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -76,7 +76,7 @@ Below is an example of how run the script, which reads in the data and plots the
 - [ ] Released version 1
 - [ ] Add Tests
 
-See the [open issues](https://github.com/KarlJohnsonnn/Voodoo/blob/release_v1/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/WillyWallace/eval_ac/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
