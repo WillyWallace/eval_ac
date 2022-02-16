@@ -63,7 +63,7 @@ Below is an example of how run the script, which reads in the data and plots the
    ```
 2. Open the 'evaluate_absolute_calibration.ipynb' notebook, see the processing and the results.
 
-<img src="eval_ac/eval_ac/results_ln2_cal.png" width="70%">
+<img src="eval_ac/results_ln2_cal.png" width="70%">
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
