@@ -10,6 +10,7 @@ class HatproBinAbscalHis:
     """HATPRO binary file reader."""
 
     def __init__(self, filename):
+        self._file_position = None
         self.filename = filename
         # self._file_position = 0
         self.header = self.read_header()
