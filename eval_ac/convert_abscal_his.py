@@ -22,7 +22,11 @@ class HatproBinAbscalHis:
         # write netcdf file
         self.write_nc()
 
-    def aff_global_attrs(self):
+    def write_nc(self):
+        """Writes netcdf file"""
+        self.xrdata.to_netcdf('../example_data/abscal_his.nc')
+
+    def add_global_attrs(self):
         """Adds global attributes"""
         self.xrdata.attrs['history'] = 'Data converted from ' + self.filename
         self.xrdata.attrs['source'] = str('micorwave radiometer manufactured '
