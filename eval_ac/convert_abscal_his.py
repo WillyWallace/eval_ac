@@ -17,7 +17,10 @@ class HatproBinAbscalHis:
         self.data = self.read_data()
         self.xrdata = self.convert_to_xarray()
         self.xrdata = self.add_var_attrs()
-        self.xrdata = self.aff_global_attrs()
+        self.xrdata = self.add_global_attrs()
+
+        # write netcdf file
+        self.write_nc()
 
     def aff_global_attrs(self):
         """Adds global attributes"""
