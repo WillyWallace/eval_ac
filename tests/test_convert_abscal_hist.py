@@ -1,13 +1,17 @@
 """
 this file contains the unit test routines
 """
-import pytest
-from eval_ac import convert_abscal_his
+# import pytest
+from eval_ac.convert_abscal_his import HatproBinAbscalHis
 
 
-FILE = '../example_data/ABSCAL.HIS'
+file = '../example_data/ABSCAL.HIS'
 
-def test_HatproBinAbscalHis(FILE):
-    obj = convert_abscal_his.HatproBinAbscalHis(FILE)
-    assert obj.filename == 'ABSCAL.HIS'
 
+def test_HatproBinAbscalHis():
+    obj = HatproBinAbscalHis(file)
+    assert obj.filename == file
+    assert 'gain' in obj.xrdata == True
+    assert 'temp_noise' in obj.xrdata == True
+    assert 'temp_sys' in obj.xrdata == True
+    assert 'alpha' in obj.xrdata == True
