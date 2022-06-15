@@ -57,11 +57,9 @@ Below is an example of how run the script, which reads in the data and plots the
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-1. Open jupyter notebook
-   ```sh
-   jupyter notebook
-   ```
-2. Open the 'evaluate_absolute_calibration.ipynb' notebook, see the processing and the results.
+1. set your specifications (e.g. paths of the ABSCAL.his file) in the user specifications section at the top within the evaluate_absolute_calibration.py routine 
+2. run the evaluate_absolute_calibration.py routine
+3. see the results in the results_ln2_cal.png image
 
 <img src="eval_ac/results_ln2_cal.png" width="70%">
 
