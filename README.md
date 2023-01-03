@@ -5,6 +5,7 @@
 [![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/WillyWallace/eval_ac/graphs/commit-activity)
 [![Twitter URL](https://img.shields.io/twitter/url/https/twitter.com/RSAtmos_LIM.svg?style=social&label=Follow%20%40RSAtmos_LIM)](https://twitter.com/RSAtmos_LIM)
+[![Mastodon Follow](https://img.shields.io/mastodon/follow/109461236453474330?domain=https%3A%2F%2Fmeteo.social&logoColor=%230066cc&style=social)]
 
 <!-- [![Release][release-shield]][release-url] -->
 <!-- [![PyPi version](https://badgen.net/pypi/v/pip/)](https://pypi.com/project/pip) -->
