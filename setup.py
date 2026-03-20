@@ -2,14 +2,14 @@
 
 from setuptools import setup, find_packages
 
-setup(name='read_and_visualize_abscal-his',
+setup(name='evaluation-of-absolute-calibration-results',
       version='1.0',
       description=str('reads the ABSCAL.HIS fiel and visualizes the results of '
                       + 'the absolute calibration of the microwave radiometer '
                       + 'HATPRO with liquid nitrogen'),
       author='Andreas Foth',
       author_email='andreas.foth@uni-leipzig.de',
-      url='https://github.com/WillyWallace/read_and_visualize_abscal-his.git',
+      url='https://github.com/WillyWallace/eval_ac.git',
       license='MIT',
       packages=find_packages(),
       python_requires='>=3.6',
