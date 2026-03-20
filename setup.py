@@ -12,7 +12,7 @@ setup(name='evaluation-of-absolute-calibration-results',
       url='https://github.com/WillyWallace/eval_ac.git',
       license='MIT',
       packages=find_packages(),
-      python_requires='>=3.6',
+      python_requires='>=3.8',
       install_requires=['numpy', 'xarray', 'datetime', 'matplotlib'],
       classifiers=[
         "Development Status :: 1 - Beta",
