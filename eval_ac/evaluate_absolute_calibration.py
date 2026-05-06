@@ -4,16 +4,20 @@ microwave radiometer HATPRO from RPG
 """
 import matplotlib.pyplot as plt
 from eval_ac.convert_abscal_his import HatproBinAbscalHis
+import os
+
 
 # ### begin user specifications
-FILE = '../example_data/ABSCAL.HIS'
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FILE_in = os.path.join(BASE_DIR, "..", "example_data", "ABSCAL.HIS")
+FILE_out = os.path.join(BASE_DIR, "..", "example_data", "abscal.nc")
 # # plot specifications
 latest_plot_kwargs = {'lw': '2'}
 second_latest_plot_kwargs = {'lw': '2'}
 older_plot_kwargs = {'lw': '1', 'color': 'lightgrey'}
 # ### end user specifications
 
-obj = HatproBinAbscalHis(FILE)
+obj = HatproBinAbscalHis(FILE_in, FILE_out)
 
 ds_small = obj.xrdata[['gain', 'temp_noise', 'temp_sys', 'alpha']]
 

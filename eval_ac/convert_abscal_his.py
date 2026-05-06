@@ -9,9 +9,10 @@ from eval_ac.utils.attributes import FIELDS, ATTRIBUTES
 class HatproBinAbscalHis:
     """HATPRO binary file reader."""
 
-    def __init__(self, filename):
+    def __init__(self, filename, filename_out):
         self._file_position = None
         self.filename = filename
+        self.filename_out = filename_out
         # self._file_position = 0
         self.header = self.read_header()
         self.data = self.read_data()
@@ -24,7 +25,7 @@ class HatproBinAbscalHis:
 
     def write_nc(self):
         """Writes netcdf file"""
-        self.xrdata.to_netcdf('../example_data/abscal_his.nc')
+        self.xrdata.to_netcdf(self.filename_out)
 
     def add_global_attrs(self):
         """Adds global attributes"""
