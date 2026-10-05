@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eval-ac"
+dynamic = ["version"]
+description = "Read the ABSCAL.HIS file of RPG microwave radiometers (e.g. HATPRO) and visualize the history of the absolute calibration with liquid nitrogen."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Andreas Foth", email = "andreas.foth@uni-leipzig.de" }]
+requires-python = ">=3.9"
+dependencies = [
+    "numpy",
+    "xarray",
+    "matplotlib",
+    "netCDF4",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Atmospheric Science",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+dev = ["pytest", "flake8", "pylint"]
+
+[project.scripts]
+eval-ac = "eval_ac.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/WillyWallace/eval_ac"
+Issues = "https://github.com/WillyWallace/eval_ac/issues"
+
+[tool.setuptools.dynamic]
+version = { attr = "eval_ac.__version__" }
+
+[tool.setuptools.packages.find]
+include = ["eval_ac*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

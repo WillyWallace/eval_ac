@@ -102,11 +102,11 @@ ATTRIBUTES = {
         units='K'
     ),
     'cold_load_temp_1': MetaData(
-        long_name='hot load temperature receiver 1',
+        long_name='cold load temperature receiver 1',
         units='K'
     ),
     'cold_load_temp_2': MetaData(
-        long_name='hot load temperature receiver 2',
+        long_name='cold load temperature receiver 2',
         units='K'
     ),
     'N_rec_1': MetaData(
@@ -129,8 +129,18 @@ ATTRIBUTES = {
         long_name='frequency',
         units='GHz'
     ),
+    'time': MetaData(
+        long_name='time of calibration (receiver 1)',
+        standard_name='time',
+        axis='T'
+    ),
+    'receiver': MetaData(
+        long_name='receiver number',
+        comment='1: first receiver (e.g. K-band), 2: second receiver '
+        '(e.g. V-band)',
+        units='1'
+    ),
     'gain': MetaData(
-        standard_name='reveiver gain',
         long_name='receiver gain',
         units='V K-1'
     ),
@@ -144,7 +154,7 @@ ATTRIBUTES = {
     ),
     'alpha': MetaData(
         long_name='non-linearity factor',
-        units='K'
+        units='1'
     ),
     'calibration_flag': MetaData(
         long_name='calibration flags',
