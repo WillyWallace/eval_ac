@@ -26,14 +26,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Drift plot in the style of the history plot (`results_ln2_drift.png`),
   Python: `eval_ac.plotting.plot_drift()`.
 - CLI options `-d/--drift-plot`, `--n-reference`, `-t/--threshold
-  VARIABLE=PERCENT` (repeatable) and `--fail-on-drift` (exit code 2).
-- CLI prints a quality report of the latest calibration.
+  VARIABLE=PERCENT` (repeatable), `--max-age DAYS` and
+  `--fail-on-warning` (exit code 2 if the report contains a warning).
+- CLI prints a quality report of the latest calibration of each receiver:
+  date and age, channels with flag 0, alpha out of range and drift.
+- Age check: warning if the latest calibration of a receiver is older than
+  183 days (RPG recommends an absolute calibration every 5 to 6 months,
+  manual section 3.1.3). The age is computed from `time_of_rec_1/2` of the
+  respective receiver. Python: `eval_ac.analysis.calibration_age()`.
+- Range check of the non-linearity factor: warning if alpha of the latest
+  calibration is outside 0.9 <= alpha < 1 (manual section 3.1.3.1).
+  Python: `eval_ac.analysis.alpha_out_of_range()`.
 - README section "Interpreting the results" based on the RPG manual
   (RPG-MWR-STD-SW): meaning and operational use of G, Tsys, Tn and alpha,
   typical patterns in the drift plot, what to do with a suspicious
   calibration, how to adapt the thresholds and limitations.
 - Tests with modified copies of the example file (other calibration
-  types, flag 0); 40 tests in total.
+  types, flag 0, time stamps, alpha); 47 tests in total. The tests do not
+  depend on the current date.
 
 ### Changed
 - History plot: latest and previous calibration are determined per
@@ -48,7 +58,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `calibration_flag` comment: the flag is 0 = not calibrated,
   1 = calibrated per channel (RPG manual, appendix A20), not an 8 bit
   array.
-- `alpha`: comment with the detector model and the typical range added.
+- `alpha`: comment with the detector model and the valid range added.
 
 ## [0.2.0] - 2026-10-05
 

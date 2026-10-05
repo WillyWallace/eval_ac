@@ -71,8 +71,12 @@ This writes the NetCDF file, the history plot `results_ln2_cal.png`, the drift p
 ```text
 read 16 calibration entries from path/to/ABSCAL.HIS
 16 of them are calibrations with liquid nitrogen
+receiver 1: latest calibration 2026-04-29 (159 days ago)
+receiver 2: latest calibration 2026-04-29 (159 days ago)
 drift: all channels of the latest calibration are within the thresholds
 ```
+
+Lines starting with `warning:` point to something that should be checked, see [Quality checks](#quality-checks).
 
 | Option | Description |
 | --- | --- |
@@ -85,7 +89,8 @@ drift: all channels of the latest calibration are within the thresholds
 | `--all-cal-types` | use all calibrations instead of only those with liquid nitrogen |
 | `--n-reference N` | number of calibrations before the latest one forming the drift reference (default: 5) |
 | `-t`, `--threshold VAR=PERCENT` | drift threshold, e.g. `-t gain=8 -t temp_sys=2`; variables: `gain`, `temp_noise`, `temp_sys`, `alpha` |
-| `--fail-on-drift` | exit with code 2 if the latest calibration exceeds a threshold (e.g. for cron jobs) |
+| `--max-age DAYS` | warn if the latest calibration of a receiver is older (default: 183 days) |
+| `--fail-on-warning` | exit with code 2 if the report contains a warning (e.g. for cron jobs) |
 | `--version` | print the version |
 
 `python -m eval_ac ...` works as well. Try it with the example file:
@@ -108,6 +113,23 @@ The y-axis is scaled to the thresholds and to the latest and previous calibratio
 
 <img src="docs/images/results_ln2_drift.png" width="70%">
 
+#### Quality checks
+
+The report checks the latest calibration of each receiver (only calibrations with liquid nitrogen, unless `--all-cal-types` is given):
+
+| Check | Warning if | Background |
+| --- | --- | --- |
+| Age | the latest calibration is older than `--max-age` days (default 183) | RPG recommends an absolute calibration every 5 to 6 months and after transport (manual, section 3.1.3). The age is computed from the calibration time of each receiver. |
+| Flag | a channel has `calibration_flag` = 0 | The channel was not calibrated (manual, appendix A20). |
+| Non-linearity factor | α is outside 0.9 ≤ α < 1 | Valid range of the detector model (manual, section 3.1.3.1, equation 1). Channels with flag 0 are not checked. |
+| Drift | the deviation from the reference exceeds the threshold | See [Drift plot](#drift-plot) and [Interpreting the results](#interpreting-the-results). |
+
+With `--fail-on-warning`, eval-ac exits with code 2 if any check gives a warning, e.g. to send an e-mail from a cron job:
+
+```sh
+eval-ac /data/ABSCAL.HIS --no-plot --fail-on-warning || echo "check calibration" | mail -s "HATPRO" me@example.org
+```
+
 ### Interpreting the results
 
 The report and the drift plot point to calibrations that deserve a closer look; they do not decide whether a calibration is good or bad. That decision needs the knowledge of the instrument and of the calibration conditions. The background below is taken from the RPG manual *Principle of Operation & Software (standard radiometers)*, RPG-MWR-STD-SW (cited as "manual, section …").
@@ -121,7 +143,7 @@ During the absolute calibration the radiometer looks at the internal ambient tar
 | `gain` (G) | receiver gain [V/K] | Very sensitive to small changes of the physical temperature of the receiver; it is recalibrated regularly with the ambient target (gain calibration, manual, section 3.3). |
 | `temp_sys` (T<sub>sys</sub>) | system noise temperature [K] | Recalibrated together with G using the noise diode and the ambient target (manual, section 3.1.3.1). Changes of the temperature of the receiver optics (e.g. the feedhorn) change T<sub>sys</sub> (manual, section 3.1.3.2). |
 | `temp_noise` (T<sub>n</sub>) | equivalent temperature of the noise diode [K] | Used as **secondary standard** for all automatic calibrations until the next absolute calibration; it is assumed to be stable (manual, section 3.1.3.1). In transparent channels it can also be recalibrated by sky tipping (manual, section 4.9.1). |
-| `alpha` (α) | non-linearity factor of the detector, U = G·P<sup>α</sup>, typically 0.9–1 | Assumed to be constant until the next absolute calibration (manual, section 3.1.3.1). |
+| `alpha` (α) | non-linearity factor of the detector, U = G·P<sup>α</sup> with 0.9 ≤ α < 1 | Assumed to be constant until the next absolute calibration (manual, section 3.1.3.1). |
 
 **Consequences for the evaluation**
 
