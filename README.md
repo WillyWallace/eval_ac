@@ -31,6 +31,8 @@
 <!-- Introduction -->
 ## Introduction
 
+📖 **Documentation:** https://eval-ac.readthedocs.io (user guide, Python API, ABSCAL.HIS file format)
+
 This repository was created to display the results of the absolute calibration with liquid nitrogen of the microwave radiometer HATPRO manufactured by Radiometer Physics GmbH. For this purpose, the binary file ABSCAL.HIS is read in and converted into an xarray. Then the receiver gain, the temperature of the noise diode, the temperature of the system noise and the non-linearity factor are displayed in comparison to the previous and other prior calibrations.
 
 <!-- GETTING STARTED -->
@@ -38,6 +40,7 @@ This repository was created to display the results of the absolute calibration w
 
 ### Installation
 
+<!-- docs-installation-start -->
 eval_ac requires Python 3.9 or newer. The dependencies (numpy, xarray, matplotlib, netCDF4) are installed automatically.
 
 1. Clone the repo
@@ -54,12 +57,14 @@ eval_ac requires Python 3.9 or newer. The dependencies (numpy, xarray, matplotli
    ```sh
    pip install -e ".[dev]"
    ```
+<!-- docs-installation-end -->
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 <!-- USAGE EXAMPLES -->
 ## Usage
 
+<!-- docs-usage-start -->
 ### Command line
 
 ```sh
@@ -103,7 +108,7 @@ eval-ac example_data/ABSCAL.HIS
 
 The plot shows the receiver gain, the noise diode temperature, the system noise temperature and the non-linearity factor of both receivers. The latest and the previous calibration of each receiver are highlighted with their dates, all older calibrations are drawn in grey. Channels that were not calibrated (`calibration_flag` = 0) are marked with a red cross. By default, only calibrations with liquid nitrogen are used (`cal_type` = 1); if only one receiver of an entry was calibrated with liquid nitrogen, only this receiver is used.
 
-<img src="docs/images/results_ln2_cal.png" width="70%">
+![History plot of the example data](docs/images/results_ln2_cal.png)
 
 #### Drift plot
 
@@ -111,7 +116,7 @@ For each receiver, the latest calibration is compared with the median of the 5 c
 
 The y-axis is scaled to the thresholds and to the latest and previous calibration. Large outliers of older calibrations are therefore cut off at the edge of the panel; they are still visible in the history plot.
 
-<img src="docs/images/results_ln2_drift.png" width="70%">
+![Drift plot of the example data](docs/images/results_ln2_drift.png)
 
 #### Quality checks
 
@@ -186,8 +191,10 @@ The default thresholds are derived from a single HATPRO (2018–2026, 16 calibra
 - With fewer than 5 earlier calibrations, the reference consists of fewer values (see `n_reference_used` in the result of `calibration_drift()`); with none, no drift can be computed.
 - The drift is relative to the previous calibrations. A slow drift over many calibrations shifts the reference as well and is better seen in the history plot.
 
+<!-- docs-usage-end -->
 ### Python
 
+<!-- docs-python-start -->
 ```python
 from eval_ac.convert_abscal_his import read_abscal_his, write_netcdf
 from eval_ac.analysis import select_cal_type, calibration_drift, drift_exceedances
@@ -208,12 +215,15 @@ plot_drift(drift, thresholds={"gain": 8}).savefig("drift.png")
 
 The dataset has the dimensions `n_samples` (calibration entries, oldest first) and `freq` (channels). The coordinate `time` holds the date of each calibration, the coordinate `receiver` (1 or 2) assigns each channel to its receiver.
 
+<!-- docs-python-end -->
 ### Running the tests
 
+<!-- docs-tests-start -->
 ```sh
 pip install -e ".[test]"
 pytest
 ```
+<!-- docs-tests-end -->
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -221,7 +231,8 @@ pytest
 ## Roadmap
 
 - [x] add meaningful docstrings
-- [ ] make documentation --> readthedocs
+- [x] make documentation with Sphinx (`docs/`)
+- [ ] host the documentation on readthedocs
 - [x] enable pip install ...
 - [ ] publish on PyPI
 - [ ] Released version 1
