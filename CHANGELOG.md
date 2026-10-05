@@ -28,6 +28,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CLI options `-d/--drift-plot`, `--n-reference`, `-t/--threshold
   VARIABLE=PERCENT` (repeatable) and `--fail-on-drift` (exit code 2).
 - CLI prints a quality report of the latest calibration.
+- README section "Interpreting the results": typical patterns in the
+  drift plot, differences between the variables, how to adapt the
+  thresholds and limitations of the analysis.
 - Tests with modified copies of the example file (other calibration
   types, flag 0); 40 tests in total.
 

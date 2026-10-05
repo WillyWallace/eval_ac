@@ -102,11 +102,41 @@ The plot shows the receiver gain, the noise diode temperature, the system noise 
 
 #### Drift plot
 
-For each receiver, the latest calibration is compared with the median of the 5 calibrations before it (deviation in percent). Channels that were not calibrated are excluded. The dashed red lines are the thresholds, channels of the latest calibration exceeding them are circled and listed in the report.
+For each receiver, the latest calibration is compared with the median of the 5 calibrations before it (deviation in percent). Channels that were not calibrated are excluded. The dashed red lines are the thresholds, channels of the latest calibration exceeding them are circled and listed in the report. The grey lines show how far the older calibrations deviate from the same reference.
 
-The default thresholds are gain 10 %, noise diode temperature 2.5 %, system noise temperature 2.5 % and non-linearity factor 0.5 %. They correspond to about the 99th percentile of the deviations in the example data of a HATPRO (2018–2026) and should be adapted to your instrument with `--threshold`.
+The y-axis is scaled to the thresholds and to the latest and previous calibration. Large outliers of older calibrations are therefore cut off at the edge of the panel; they are still visible in the history plot.
 
 <img src="docs/images/results_ln2_drift.png" width="70%">
+
+### Interpreting the results
+
+The report and the drift plot point to calibrations that deserve a closer look; they do not decide whether a calibration is good or bad. That decision needs the knowledge of the instrument and of the calibration conditions.
+
+**Why the median of the previous calibrations?** A single failed calibration in the reference would shift a mean, but hardly the median. The previous calibration is part of the reference, so its deviation is usually small.
+
+**Typical patterns**
+
+| Pattern in the drift plot | Possible meaning |
+| --- | --- |
+| Latest within the thresholds, similar to the grey lines | Calibration consistent with the history. |
+| Single channels of the latest calibration out of the thresholds, previous calibration normal | Possibly a problem during this calibration (e.g. of the cold load); check the calibration conditions and consider repeating it. |
+| All channels of a receiver shifted in the same direction | Rather a change of the receiver itself (e.g. after maintenance or a hardware change) than a single failed calibration. |
+| Latest and previous calibration deviate in the same way | The change is confirmed by two calibrations and is probably real; the reference (the 5 calibrations before) still describes the old state. |
+| Channels marked as "not calibrated" (flag 0) | The calibration of these channels was not completed; they are not evaluated. |
+
+**Differences between the variables.** In the example data the receiver gain varies much more between calibrations than the other variables (standard deviation 1–3 % in the K-band and 5–18 % in the V-band, compared with below 2 % for the noise diode temperature and the system noise temperature). The default threshold for the gain is therefore larger. The non-linearity factor is close to 1 and varies only little, so already small relative deviations are noticeable.
+
+**Adapting the thresholds.** The default thresholds are derived from a single HATPRO (2018–2026, 16 calibrations). Instruments, channels and sites differ, so:
+
+1. run `eval-ac` on the full history of your instrument,
+2. look at the spread of the grey lines in the drift plot,
+3. set thresholds slightly above the usual spread, e.g. `-t gain=6 -t temp_noise=1.5`.
+
+**Limitations**
+
+- With fewer than 5 earlier calibrations, the reference consists of fewer values (see `n_reference_used` in the result of `calibration_drift()`); with none, no drift can be computed.
+- Only calibrations with liquid nitrogen are compared by default. Sky tipping calibrations (`cal_type` = 2) are a different method and are not mixed in.
+- `calibration_flag` is interpreted as 0 = not calibrated, 1 = calibrated, as defined in the metadata of this package. If your files use further bits of the flag, check the RPG manual of your instrument.
 
 ### Python
 
