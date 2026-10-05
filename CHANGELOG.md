@@ -3,6 +3,29 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+- Documentation with Sphinx in `docs/` (theme furo, Markdown via
+  MyST): installation, user guide, Python interface with API reference
+  generated from the docstrings, description of the ABSCAL.HIS file format
+  (RPG manual, appendix A20, with byte offsets) and of the dataset, and the
+  changelog. The README sections are included, not copied, so that there
+  is only one source.
+- `.readthedocs.yaml` for hosting on Read the Docs (warnings are errors).
+- Extra `docs` in `pyproject.toml`; the extra `dev` contains the
+  documentation tools as well.
+- CI job that builds the documentation with warnings as errors.
+
+### Changed
+- README: images as Markdown instead of HTML (needed for the
+  documentation; on GitHub they are now shown in full width), markers for
+  the sections included in the documentation, link to the documentation.
+
+### Fixed
+- Docstring of `calibration_drift()`: the return value was rendered as
+  return type in the API reference.
+
 ## [0.3.0] - 2026-10-05
 
 ### Added

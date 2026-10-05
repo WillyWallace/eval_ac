@@ -27,13 +27,15 @@ classifiers = [
 
 [project.optional-dependencies]
 test = ["pytest"]
-dev = ["pytest", "flake8", "pylint"]
+docs = ["sphinx>=7", "myst-parser>=2", "furo"]
+dev = ["pytest", "flake8", "pylint", "sphinx>=7", "myst-parser>=2", "furo"]
 
 [project.scripts]
 eval-ac = "eval_ac.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/WillyWallace/eval_ac"
+Documentation = "https://eval-ac.readthedocs.io"
 Issues = "https://github.com/WillyWallace/eval_ac/issues"
 
 [tool.setuptools.dynamic]
