@@ -36,18 +36,24 @@ def test_version(capsys):
     assert __version__ in capsys.readouterr().out
 
 
+# the example calibration is from 2026-04-29; NO_AGE disables the age check
+# so that the tests do not depend on the current date
+NO_AGE = ['--max-age', '1e6']
+
+
 def test_drift_report_and_exit_code(abscal_his, capsys):
-    """Exceedances are reported; --fail-on-drift sets exit code 2."""
-    args = [str(abscal_his), '--no-plot', '-t', 'gain=1.5']
+    """Exceedances are reported; --fail-on-warning sets exit code 2."""
+    args = [str(abscal_his), '--no-plot', '-t', 'gain=1.5'] + NO_AGE
     assert main(args) == 0
     out = capsys.readouterr().out
     assert '3 channel(s) of the latest calibration exceed' in out
-    assert main(args + ['--fail-on-drift']) == 2
+    assert main(args + ['--fail-on-warning']) == 2
 
 
 def test_no_drift(abscal_his, capsys):
     """With the default thresholds the example file is within limits."""
-    assert main([str(abscal_his), '--no-plot', '--fail-on-drift']) == 0
+    assert main([str(abscal_his), '--no-plot', '--fail-on-warning']
+                + NO_AGE) == 0
     assert 'within the thresholds' in capsys.readouterr().out
 
 
@@ -75,3 +81,22 @@ def test_invalid_threshold(abscal_his, threshold):
     """Invalid thresholds are rejected by the argument parser."""
     with pytest.raises(SystemExit):
         main([str(abscal_his), '-t', threshold])
+
+
+def test_age_warning(abscal_his, capsys):
+    """An old calibration is reported and counts as warning."""
+    args = [str(abscal_his), '--no-plot', '--max-age', '1']
+    assert main(args) == 0
+    out = capsys.readouterr().out
+    assert 'warning: receiver 1: latest calibration 2026-04-29' in out
+    assert main(args + ['--fail-on-warning']) == 2
+
+
+def test_alpha_warning(modified_his, capsys):
+    """Alpha outside 0.9 <= alpha < 1 is reported and counts as warning."""
+    path = modified_his(alpha={(15, 9): 1.02})
+    assert main([str(path), '--no-plot', '--fail-on-warning']
+                + NO_AGE) == 2
+    out = capsys.readouterr().out
+    assert 'outside 0.9 <= alpha < 1' in out
+    assert 'receiver 2  alpha = 1.0200' in out

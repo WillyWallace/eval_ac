@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 from eval_ac.analysis import (CAL_TYPE_SKY_TIPPING, DEFAULT_THRESHOLDS,
+                              alpha_out_of_range, calibration_age,
                               calibration_drift, drift_exceedances,
                               latest_not_calibrated, select_cal_type)
 from eval_ac.convert_abscal_his import read_abscal_his
@@ -102,3 +103,45 @@ def test_latest_not_calibrated(modified_his):
     rows = latest_not_calibrated(select_cal_type(read_abscal_his(path)))
     assert [(round(row['freq'], 2), row['receiver']) for row in rows] == [
         (23.84, 1), (54.94, 2)]
+
+
+def test_calibration_age(abscal_his):
+    """Age is counted from the latest calibration of each receiver."""
+    rows = calibration_age(read_abscal_his(abscal_his),
+                           now='2026-05-29T09:32:38')
+    assert [row['receiver'] for row in rows] == [1, 2]
+    assert rows[0]['time'] == np.datetime64('2026-04-29T09:32:38')
+    assert rows[0]['age_days'] == pytest.approx(30.0)
+
+
+def test_calibration_age_uses_receiver_time(modified_his):
+    """Receiver 2 uses its own time stamp (time_of_rec_2)."""
+    one_day_earlier = 799147958 - 86400
+    path = modified_his(times={(15, 2): one_day_earlier})
+    rows = calibration_age(read_abscal_his(path), now='2026-05-29T09:32:38')
+    assert rows[0]['age_days'] == pytest.approx(30.0)
+    assert rows[1]['age_days'] == pytest.approx(31.0)
+
+
+def test_calibration_age_after_selection(modified_his):
+    """Without LN2 in the latest entry, the entry before is used."""
+    path = modified_his(cal_types={(15, 2): CAL_TYPE_SKY_TIPPING})
+    rows = calibration_age(select_cal_type(read_abscal_his(path)))
+    assert str(rows[0]['time'].astype('datetime64[D]')) == '2026-04-29'
+    assert str(rows[1]['time'].astype('datetime64[D]')) == '2026-03-19'
+
+
+def test_alpha_in_range(abscal_his):
+    """All alpha values of the example file are valid."""
+    assert not alpha_out_of_range(read_abscal_his(abscal_his))
+
+
+def test_alpha_out_of_range(modified_his):
+    """Values below 0.9 or from 1 on are reported, flag 0 is skipped."""
+    path = modified_his(alpha={(15, 0): 0.85, (15, 8): 1.0, (15, 3): 0.8,
+                               (14, 1): 0.5},
+                        flags={(15, 3): 0})
+    rows = alpha_out_of_range(read_abscal_his(path))
+    assert [(round(row['freq'], 2), row['receiver']) for row in rows] == [
+        (22.24, 1), (52.28, 2)]
+    assert rows[0]['alpha'] == pytest.approx(0.85)

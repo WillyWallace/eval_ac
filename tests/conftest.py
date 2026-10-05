@@ -27,7 +27,13 @@ def fixture_reference_nc() -> Path:
 _HEADER_BYTES = 8
 _RECORD_BYTES = 420
 _CAL_TYPE_OFFSET = {1: 8, 2: 12}
-_FLAG_OFFSET = 140
+_TIME_OFFSET = {1: 16, 2: 20}
+_CHANNEL_OFFSET = {'calibration_flag': 140, 'alpha': 364}
+
+
+def _put(content, pos, value, dtype):
+    """Overwrites 4 bytes of ``content`` at ``pos``."""
+    content[pos:pos + 4] = np.array(value, dtype=dtype).tobytes()
 
 
 @pytest.fixture(name='modified_his')
@@ -35,18 +41,27 @@ def fixture_modified_his(abscal_his, tmp_path):
     """Factory writing a copy of the example file with changed values.
 
     Usage: ``modified_his(cal_types={(sample, receiver): 2},
-    flags={(sample, channel): 0})``.
+    flags={(sample, channel): 0}, times={(sample, receiver): seconds},
+    alpha={(sample, channel): 0.85})``.
     """
-    def _write(cal_types=None, flags=None):
+    def _write(cal_types=None, flags=None, times=None, alpha=None):
         content = bytearray(abscal_his.read_bytes())
+
+        def record(sample):
+            return _HEADER_BYTES + sample * _RECORD_BYTES
+
         for (sample, receiver), value in (cal_types or {}).items():
-            pos = (_HEADER_BYTES + sample * _RECORD_BYTES
-                   + _CAL_TYPE_OFFSET[receiver])
-            content[pos:pos + 4] = np.int32(value).tobytes()
+            _put(content, record(sample) + _CAL_TYPE_OFFSET[receiver], value,
+                 '<i4')
+        for (sample, receiver), value in (times or {}).items():
+            _put(content, record(sample) + _TIME_OFFSET[receiver], value,
+                 '<i4')
         for (sample, channel), value in (flags or {}).items():
-            pos = (_HEADER_BYTES + sample * _RECORD_BYTES + _FLAG_OFFSET
-                   + 4 * channel)
-            content[pos:pos + 4] = np.int32(value).tobytes()
+            _put(content, record(sample) + _CHANNEL_OFFSET['calibration_flag']
+                 + 4 * channel, value, '<i4')
+        for (sample, channel), value in (alpha or {}).items():
+            _put(content, record(sample) + _CHANNEL_OFFSET['alpha']
+                 + 4 * channel, value, '<f4')
         path = tmp_path / 'modified.his'
         path.write_bytes(bytes(content))
         return path

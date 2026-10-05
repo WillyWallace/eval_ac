@@ -155,7 +155,7 @@ ATTRIBUTES = {
     'alpha': MetaData(
         long_name='non-linearity factor',
         comment='Exponent of the detector response U = G * P**alpha, '
-        'typically between 0.9 and 1. See RPG manual RPG-MWR-STD-SW, '
+        'valid range 0.9 <= alpha < 1. See RPG manual RPG-MWR-STD-SW, '
         'section 3.1.3.1.',
         units='1'
     ),

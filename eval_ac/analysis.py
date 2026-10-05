@@ -17,6 +17,8 @@ import warnings
 import numpy as np
 import xarray as xr
 
+from eval_ac.convert_abscal_his import TIME_REFERENCE
+
 #: Calibration types stored in ``cal_type_1`` and ``cal_type_2``.
 CAL_TYPE_NONE = 0
 CAL_TYPE_LN2 = 1
@@ -24,6 +26,15 @@ CAL_TYPE_SKY_TIPPING = 2
 
 #: Value of ``calibration_flag`` for channels that were not calibrated.
 FLAG_NOT_CALIBRATED = 0
+
+#: Recommended maximum interval between two absolute calibrations in days:
+#: "every 5 to 6 months of operation or after transportation"
+#: (RPG manual RPG-MWR-STD-SW, section 3.1.3).
+MAX_CALIBRATION_AGE_DAYS = 183
+
+#: Valid range of the non-linearity factor, 0.9 <= alpha < 1
+#: (RPG manual RPG-MWR-STD-SW, section 3.1.3.1, equation 1).
+ALPHA_RANGE = (0.9, 1.0)
 
 #: Variables with one value per calibration entry and channel.
 CHANNEL_VARIABLES = ('gain', 'temp_noise', 'temp_sys', 'alpha')
@@ -188,6 +199,18 @@ def calibration_drift(data_set: xr.Dataset,
     return drift
 
 
+def _latest_per_receiver(data_set: xr.Dataset, variable='gain'):
+    """Yields ``(receiver number, channel mask, position of latest entry)``.
+
+    Receivers without any entry are skipped.
+    """
+    for number, mask in receiver_masks(data_set).items():
+        samples = valid_samples(data_set[variable].values[:, mask]
+                                .astype(float))
+        if samples.size:
+            yield number, mask, samples[-1]
+
+
 def latest_not_calibrated(data_set: xr.Dataset, variable='gain') -> list:
     """Lists the channels of the latest calibration with flag 0.
 
@@ -198,14 +221,75 @@ def latest_not_calibrated(data_set: xr.Dataset, variable='gain') -> list:
     """
     flagged = not_calibrated(data_set)
     rows = []
-    for number, mask in receiver_masks(data_set).items():
-        samples = valid_samples(data_set[variable].values[:, mask]
-                                .astype(float))
-        if samples.size == 0:
-            continue
-        for freq in data_set['freq'].values[mask][flagged[samples[-1],
-                                                          mask]]:
+    for number, mask, latest in _latest_per_receiver(data_set, variable):
+        for freq in data_set['freq'].values[mask][flagged[latest, mask]]:
             rows.append({'freq': float(freq), 'receiver': number})
+    return rows
+
+
+def receiver_time(data_set: xr.Dataset, number: int) -> np.ndarray:
+    """Returns the calibration times of receiver ``number``.
+
+    Uses ``time_of_rec_<number>`` (seconds since 2001-01-01, or already
+    decoded when read from a NetCDF file) and falls back to the coordinate
+    ``time``.
+    """
+    name = f'time_of_rec_{number}'
+    if name not in data_set:
+        return data_set['time'].values
+    values = data_set[name].values
+    if np.issubdtype(values.dtype, np.datetime64):
+        return values
+    return TIME_REFERENCE + values.astype('timedelta64[s]')
+
+
+def calibration_age(data_set: xr.Dataset, now=None) -> list:
+    """Returns the age of the latest calibration of each receiver.
+
+    Args:
+        data_set: Dataset, typically after :func:`select_cal_type`.
+        now: Reference time (anything accepted by ``numpy.datetime64``,
+            default: current UTC time).
+
+    Returns:
+        List of dictionaries with the keys ``receiver``, ``time``
+        (``numpy.datetime64``) and ``age_days``.
+    """
+    now = np.datetime64('now' if now is None else now, 's')
+    rows = []
+    for number, _, latest in _latest_per_receiver(data_set):
+        time = receiver_time(data_set, number)[latest].astype(
+            'datetime64[s]')
+        rows.append({'receiver': number, 'time': time,
+                     'age_days': float((now - time) / np.timedelta64(1, 'D'))})
+    return rows
+
+
+def alpha_out_of_range(data_set: xr.Dataset, valid_range=ALPHA_RANGE) -> list:
+    """Lists channels of the latest calibration with alpha out of range.
+
+    Channels that were not calibrated (flag 0) are not checked.
+
+    Args:
+        data_set: Dataset, typically after :func:`select_cal_type`.
+        valid_range: Tuple ``(low, high)``; valid is ``low <= alpha < high``.
+
+    Returns:
+        List of dictionaries with the keys ``freq``, ``receiver`` and
+        ``alpha``.
+    """
+    low, high = valid_range
+    flagged = not_calibrated(data_set)
+    rows = []
+    for number, mask, latest in _latest_per_receiver(data_set, 'alpha'):
+        alpha = data_set['alpha'].values[latest, mask].astype(float)
+        with np.errstate(invalid='ignore'):
+            bad = ~((alpha >= low) & (alpha < high))
+        bad &= ~flagged[latest, mask] & ~np.isnan(alpha)
+        for freq, value in zip(data_set['freq'].values[mask][bad],
+                               alpha[bad]):
+            rows.append({'freq': float(freq), 'receiver': number,
+                         'alpha': float(value)})
     return rows
 
 

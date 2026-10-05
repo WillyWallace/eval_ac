@@ -10,9 +10,9 @@ import sys
 
 from eval_ac import __version__
 
-#: Exit code if the latest calibration exceeds a drift threshold and
-#: ``--fail-on-drift`` is given.
-EXIT_DRIFT = 2
+#: Exit code if the quality report contains a warning and
+#: ``--fail-on-warning`` is given.
+EXIT_WARNING = 2
 
 
 def _threshold(text: str) -> tuple:
@@ -68,33 +68,81 @@ def build_parser() -> argparse.ArgumentParser:
                        help='drift threshold in percent, e.g. gain=8; can be '
                             'given several times (defaults: gain=10, '
                             'temp_noise=2.5, temp_sys=2.5, alpha=0.5)')
-    drift.add_argument('--fail-on-drift', action='store_true',
-                       help=f'exit with code {EXIT_DRIFT} if the latest '
-                            'calibration exceeds a threshold')
+
+    checks = parser.add_argument_group('quality checks')
+    checks.add_argument('--max-age', type=float, default=183, metavar='DAYS',
+                        help='warn if the latest calibration is older '
+                             '(default: %(default)s days; RPG recommends an '
+                             'absolute calibration every 5 to 6 months)')
+    checks.add_argument('--fail-on-warning', action='store_true',
+                        help=f'exit with code {EXIT_WARNING} if the report '
+                             'contains a warning (drift, age, flag 0, alpha '
+                             'out of range)')
 
     parser.add_argument('--version', action='version',
                         version=f'%(prog)s {__version__}')
     return parser
 
 
-def _print_report(data_set, exceedances, flagged):
-    """Prints the quality and drift summary of the latest calibration."""
+def _report_age(data_set, max_age):
+    """Prints the date of the latest calibration; returns True on warning."""
+    # pylint: disable=import-outside-toplevel
+    from eval_ac.analysis import calibration_age
+    warned = False
+    for row in calibration_age(data_set):
+        date = str(row['time'].astype('datetime64[D]'))
+        line = (f'receiver {row["receiver"]}: latest calibration {date} '
+                f'({row["age_days"]:.0f} days ago)')
+        if row['age_days'] > max_age:
+            print(f'warning: {line}, older than {max_age:g} days')
+            warned = True
+        else:
+            print(line)
+    return warned
+
+
+def _report_channels(data_set, rows, message, value=None):
+    """Prints a list of channels; returns True if there are any."""
+    if not rows:
+        return False
     units = data_set['freq'].attrs.get('units', '')
-    if flagged:
-        print(f'warning: {len(flagged)} channel(s) of the latest calibration '
-              'were not calibrated (flag 0):')
-        for row in flagged:
-            print(f'  {row["freq"]:7.2f} {units}  receiver {row["receiver"]}')
-    if not exceedances:
+    print(f'warning: {len(rows)} channel(s) of the latest calibration '
+          f'{message}:')
+    for row in rows:
+        extra = f'  {value(row)}' if value else ''
+        print(f'  {row["freq"]:7.2f} {units}  receiver {row["receiver"]}'
+              f'{extra}')
+    return True
+
+
+def _report(data_set, drift, args) -> bool:
+    """Prints the quality report of the latest calibration.
+
+    Returns:
+        True if the report contains a warning.
+    """
+    # pylint: disable=import-outside-toplevel
+    from eval_ac import analysis
+
+    warnings = [
+        _report_age(data_set, args.max_age),
+        _report_channels(data_set, analysis.latest_not_calibrated(data_set),
+                         'were not calibrated (flag 0)'),
+        _report_channels(
+            data_set, analysis.alpha_out_of_range(data_set),
+            'have a non-linearity factor outside 0.9 <= alpha < 1',
+            lambda row: f'alpha = {row["alpha"]:.4f}'),
+    ]
+    exceedances = analysis.drift_exceedances(drift, dict(args.threshold))
+    if exceedances:
+        warnings.append(_report_channels(
+            data_set, exceedances, 'exceed the drift threshold',
+            lambda row: f'{row["variable"]:<11} {row["deviation"]:+7.2f} % '
+                        f'(threshold ±{row["threshold"]:g} %)'))
+    else:
         print('drift: all channels of the latest calibration are within '
               'the thresholds')
-        return
-    print(f'warning: {len(exceedances)} channel(s) of the latest '
-          'calibration exceed the drift threshold:')
-    for row in exceedances:
-        print(f'  {row["variable"]:<11} {row["freq"]:7.2f} {units}  '
-              f'receiver {row["receiver"]}  {row["deviation"]:+7.2f} % '
-              f'(threshold ±{row["threshold"]:g} %)')
+    return any(warnings)
 
 
 def _load(args):
@@ -156,8 +204,8 @@ def main(argv=None) -> int:
         argv: Command line arguments (default: ``sys.argv[1:]``).
 
     Returns:
-        Exit code (0 on success, 1 on error, 2 on drift with
-        ``--fail-on-drift``).
+        Exit code (0 on success, 1 on error, 2 on a warning with
+        ``--fail-on-warning``).
     """
     args = build_parser().parse_args(argv)
 
@@ -171,17 +219,14 @@ def main(argv=None) -> int:
     if data_set is None:
         return 1
 
-    thresholds = dict(args.threshold)
     drift = analysis.calibration_drift(data_set, n_reference=args.n_reference)
-    exceedances = analysis.drift_exceedances(drift, thresholds)
-    _print_report(data_set, exceedances,
-                  analysis.latest_not_calibrated(data_set))
+    warned = _report(data_set, drift, args)
 
     if not args.no_plot:
-        _save_plots(args, data_set, drift, thresholds)
+        _save_plots(args, data_set, drift, dict(args.threshold))
 
-    if args.fail_on_drift and exceedances:
-        return EXIT_DRIFT
+    if args.fail_on_warning and warned:
+        return EXIT_WARNING
     return 0
 
 
