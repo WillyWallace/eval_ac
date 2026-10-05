@@ -115,3 +115,4 @@ dmypy.json
 
 # output of eval-ac when run in the repository root
 /results_ln2_cal.png
+/results_ln2_drift.png
