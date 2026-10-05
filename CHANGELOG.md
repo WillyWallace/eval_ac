@@ -28,11 +28,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - CLI options `-d/--drift-plot`, `--n-reference`, `-t/--threshold
   VARIABLE=PERCENT` (repeatable) and `--fail-on-drift` (exit code 2).
 - CLI prints a quality report of the latest calibration.
-- README section "Interpreting the results": typical patterns in the
-  drift plot, differences between the variables, how to adapt the
-  thresholds and limitations of the analysis.
-- Tests with modified copies of the example file (other calibration
-  types, flag 0); 40 tests in total.
+- README section "Interpreting the results" based on the RPG manual
+  (RPG-MWR-STD-SW): meaning and operational use of G, Tsys, Tn and alpha,
+  typical patterns in the drift plot, what to do with a suspicious
+  calibration, how to adapt the thresholds and limitations.
 
 ### Changed
 - History plot: latest and previous calibration are determined per
@@ -42,6 +41,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   every panel, so that the legend never hides data.
 - `--no-plot` now suppresses both plots.
 - The NetCDF file (`--netcdf`) still contains all calibration types.
+
+### Fixed
+- `calibration_flag` comment: the flag is 0 = not calibrated,
+  1 = calibrated per channel (RPG manual, appendix A20), not an 8 bit
+  array.
+- `alpha`: comment with the detector model and the typical range added.
+- Tests with modified copies of the example file (other calibration
+  types, flag 0); 40 tests in total.
 
 ## [0.2.0] - 2026-10-05
 

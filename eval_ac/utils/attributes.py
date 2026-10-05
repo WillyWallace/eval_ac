@@ -154,14 +154,17 @@ ATTRIBUTES = {
     ),
     'alpha': MetaData(
         long_name='non-linearity factor',
+        comment='Exponent of the detector response U = G * P**alpha, '
+        'typically between 0.9 and 1. See RPG manual RPG-MWR-STD-SW, '
+        'section 3.1.3.1.',
         units='1'
     ),
     'calibration_flag': MetaData(
         long_name='calibration flags',
         definition=DEFINITIONS['calibration_flag'],
         units='1',
-        comment='Quality information as an 8 bit array.'
-        + ' See RPG HATPRO manual for more information.'
+        comment='Per channel: 0 = not calibrated, 1 = calibrated. See RPG '
+        'manual RPG-MWR-STD-SW, appendix A20 (ABSCAL.HIS).'
     )
 
 }

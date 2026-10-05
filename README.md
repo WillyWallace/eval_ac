@@ -110,33 +110,59 @@ The y-axis is scaled to the thresholds and to the latest and previous calibratio
 
 ### Interpreting the results
 
-The report and the drift plot point to calibrations that deserve a closer look; they do not decide whether a calibration is good or bad. That decision needs the knowledge of the instrument and of the calibration conditions.
+The report and the drift plot point to calibrations that deserve a closer look; they do not decide whether a calibration is good or bad. That decision needs the knowledge of the instrument and of the calibration conditions. The background below is taken from the RPG manual *Principle of Operation & Software (standard radiometers)*, RPG-MWR-STD-SW (cited as "manual, section …").
 
-**Why the median of the previous calibrations?** A single failed calibration in the reference would shift a mean, but hardly the median. The previous calibration is part of the reference, so its deviation is usually small.
+#### What the absolute calibration determines
 
-**Typical patterns**
+During the absolute calibration the radiometer looks at the internal ambient target and at the external liquid nitrogen cooled target, each with and without additional noise from the noise diode. From these four measurements it determines four parameters per channel (manual, section 3.1.3.1):
+
+| Variable | Meaning | Use between two absolute calibrations |
+| --- | --- | --- |
+| `gain` (G) | receiver gain [V/K] | Very sensitive to small changes of the physical temperature of the receiver; it is recalibrated regularly with the ambient target (gain calibration, manual, section 3.3). |
+| `temp_sys` (T<sub>sys</sub>) | system noise temperature [K] | Recalibrated together with G using the noise diode and the ambient target (manual, section 3.1.3.1). Changes of the temperature of the receiver optics (e.g. the feedhorn) change T<sub>sys</sub> (manual, section 3.1.3.2). |
+| `temp_noise` (T<sub>n</sub>) | equivalent temperature of the noise diode [K] | Used as **secondary standard** for all automatic calibrations until the next absolute calibration; it is assumed to be stable (manual, section 3.1.3.1). In transparent channels it can also be recalibrated by sky tipping (manual, section 4.9.1). |
+| `alpha` (α) | non-linearity factor of the detector, U = G·P<sup>α</sup>, typically 0.9–1 | Assumed to be constant until the next absolute calibration (manual, section 3.1.3.1). |
+
+**Consequences for the evaluation**
+
+- Changes of **T<sub>n</sub>** and **α** are the most relevant: until the next absolute calibration, every automatic calibration builds on them. A real change of T<sub>n</sub> that is not captured by a new absolute calibration enters the measured brightness temperatures.
+- Differences of the **gain** between absolute calibrations are expected, because the gain follows the receiver temperature and is recalibrated during operation anyway. Its default threshold is therefore larger. In the example data the gain varies much more than the other variables (standard deviation 1–3 % in the K-band and 5–18 % in the V-band, compared with below 2 % for T<sub>n</sub> and T<sub>sys</sub>).
+- ABSCAL.HIS also contains successful sky tipping calibrations (manual, section 4.6). They use a different method and are only possible in transparent channels, so eval_ac compares only calibrations with liquid nitrogen by default.
+
+#### Why the median of the previous calibrations?
+
+A single failed calibration in the reference would shift a mean, but hardly the median. The previous calibration is part of the reference, so its deviation is usually small.
+
+#### Typical patterns
+
+These are rules of thumb, not statements of the manual:
 
 | Pattern in the drift plot | Possible meaning |
 | --- | --- |
 | Latest within the thresholds, similar to the grey lines | Calibration consistent with the history. |
-| Single channels of the latest calibration out of the thresholds, previous calibration normal | Possibly a problem during this calibration (e.g. of the cold load); check the calibration conditions and consider repeating it. |
-| All channels of a receiver shifted in the same direction | Rather a change of the receiver itself (e.g. after maintenance or a hardware change) than a single failed calibration. |
+| Single channels of the latest calibration out of the thresholds, previous calibration normal | Possibly a problem during this calibration, e.g. with the cold target (filling, condensation; the manual asks to let the target dry before the V-band part, section 4.8). Check the calibration conditions and consider repeating the calibration. |
+| All channels of a receiver shifted in the same direction | Rather a change of the receiver or of its noise diode than a single failed calibration, e.g. after maintenance or transport. |
 | Latest and previous calibration deviate in the same way | The change is confirmed by two calibrations and is probably real; the reference (the 5 calibrations before) still describes the old state. |
-| Channels marked as "not calibrated" (flag 0) | The calibration of these channels was not completed; they are not evaluated. |
+| Channels marked as "not calibrated" (flag 0) | These channels were not calibrated in this entry (manual, appendix A20); they are not evaluated. |
 
-**Differences between the variables.** In the example data the receiver gain varies much more between calibrations than the other variables (standard deviation 1–3 % in the K-band and 5–18 % in the V-band, compared with below 2 % for the noise diode temperature and the system noise temperature). The default threshold for the gain is therefore larger. The non-linearity factor is close to 1 and varies only little, so already small relative deviations are noticeable.
+#### What to do with a suspicious calibration
 
-**Adapting the thresholds.** The default thresholds are derived from a single HATPRO (2018–2026, 16 calibrations). Instruments, channels and sites differ, so:
+- Check that the absolute calibration was done after a warm-up of at least 30 minutes; it is recommended every 5 to 6 months and after transport (manual, section 3.1.3).
+- Repeat the calibration if the conditions were doubtful.
+- A bad calibration can be removed in the RPG host software: in the *Absolute Calibration History* menu, *Delete Last Entries* removes all entries after the marked one, and *Generate a new calibration file* creates an ABSCAL.CLB from selected calibrations of receiver 1 and 2 (manual, section 4.6).
+
+#### Adapting the thresholds
+
+The default thresholds are derived from a single HATPRO (2018–2026, 16 calibrations). Instruments, channels and sites differ, so:
 
 1. run `eval-ac` on the full history of your instrument,
 2. look at the spread of the grey lines in the drift plot,
 3. set thresholds slightly above the usual spread, e.g. `-t gain=6 -t temp_noise=1.5`.
 
-**Limitations**
+#### Limitations
 
 - With fewer than 5 earlier calibrations, the reference consists of fewer values (see `n_reference_used` in the result of `calibration_drift()`); with none, no drift can be computed.
-- Only calibrations with liquid nitrogen are compared by default. Sky tipping calibrations (`cal_type` = 2) are a different method and are not mixed in.
-- `calibration_flag` is interpreted as 0 = not calibrated, 1 = calibrated, as defined in the metadata of this package. If your files use further bits of the flag, check the RPG manual of your instrument.
+- The drift is relative to the previous calibrations. A slow drift over many calibrations shifts the reference as well and is better seen in the history plot.
 
 ### Python
 
