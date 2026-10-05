@@ -1,272 +1,315 @@
-"""This file contains the read and conversion routines"""
+"""Read the binary ABSCAL.HIS file of RPG microwave radiometers.
+
+The ABSCAL.HIS file contains the history of all absolute calibrations
+(e.g. with liquid nitrogen) of a Radiometer Physics GmbH (RPG) microwave
+radiometer such as HATPRO.
+
+Typical usage::
+
+    from eval_ac.convert_abscal_his import read_abscal_his, write_netcdf
+
+    ds = read_abscal_his('ABSCAL.HIS')
+    write_netcdf(ds, 'abscal.nc')
+"""
 
 import datetime
+import warnings
+from pathlib import Path
+
 import numpy as np
 import xarray as xr
+
+from eval_ac import __version__
 from eval_ac.utils.attributes import FIELDS, ATTRIBUTES
 
+#: File code (magic number) identifying an ABSCAL.HIS file.
+FILE_CODE_ABSCAL_HIS = 39583209
 
-class HatproBinAbscalHis:
-    """HATPRO binary file reader."""
+#: Reference time of the RPG time stamps (seconds since this date, UTC).
+TIME_REFERENCE = np.datetime64('2001-01-01T00:00:00', 's')
 
-    def __init__(self, filename, filename_out):
-        self._file_position = None
+_INT = np.dtype('<i4')
+_FLOAT = np.dtype('<f4')
+
+# scalar fields at the start of each record: (name, dtype)
+_RECORD_SCALARS = (
+    ('radiometer_id', _INT),
+    ('cal_type_1', _INT),
+    ('cal_type_2', _INT),
+    ('time_of_rec_1', _INT),
+    ('time_of_rec_2', _INT),
+    ('amb_temp_1', _FLOAT),
+    ('amb_temp_2', _FLOAT),
+    ('press_1', _FLOAT),
+    ('press_2', _FLOAT),
+    ('hot_load_temp_1', _FLOAT),
+    ('hot_load_temp_2', _FLOAT),
+    ('cold_load_temp_1', _FLOAT),
+    ('cold_load_temp_2', _FLOAT),
+)
+
+# per-channel fields at the end of each record: (name, dtype)
+_RECORD_CHANNELS = (
+    ('calibration_flag', _INT),
+    ('gain', _FLOAT),
+    ('temp_noise', _FLOAT),
+    ('temp_sys', _FLOAT),
+    ('alpha', _FLOAT),
+)
+
+_N_SPARE = 5
+
+
+class _BinaryCursor:
+    """Sequential reader on an in-memory byte buffer."""
+
+    def __init__(self, buffer: bytes, filename):
+        self.buffer = buffer
         self.filename = filename
-        self.filename_out = filename_out
-        # self._file_position = 0
-        self.header = self.read_header()
-        self.data = self.read_data()
-        self.xrdata = self.convert_to_xarray()
-        self.xrdata = self.add_var_attrs()
-        self.xrdata = self.add_global_attrs()
+        self.position = 0
 
-        # write netcdf file
-        self.write_nc()
+    def read(self, dtype: np.dtype, count: int = 1) -> np.ndarray:
+        """Reads ``count`` values of type ``dtype`` and advances the cursor."""
+        n_bytes = dtype.itemsize * count
+        if self.position + n_bytes > len(self.buffer):
+            raise ValueError(
+                f'{self.filename}: unexpected end of file at byte '
+                f'{self.position} (file size {len(self.buffer)} bytes). '
+                'The file seems to be truncated or corrupt.')
+        values = np.frombuffer(self.buffer, dtype=dtype, count=count,
+                               offset=self.position)
+        self.position += n_bytes
+        return values
 
-    def write_nc(self):
-        """Writes netcdf file"""
-        self.xrdata.to_netcdf(self.filename_out)
+    def read_scalar(self, dtype: np.dtype):
+        """Reads a single value."""
+        return self.read(dtype, 1)[0]
 
-    def add_global_attrs(self):
-        """Adds global attributes"""
-        self.xrdata.attrs['history'] = 'Data converted from ' + self.filename
-        self.xrdata.attrs['source'] = str('micorwave radiometer manufactured '
-                                          + 'by Radiometer Physics GmbH (RPG)')
-        self.xrdata.attrs['comments'] = ''
-        self.xrdata.attrs['conventions'] = 'CF-1.8'
-        self.xrdata.attrs['date of creation'] = str(datetime.datetime.utcnow())
 
-        return self.xrdata
+def read_header(cursor: _BinaryCursor) -> dict:
+    """Reads and validates the file header.
 
-    def add_var_attrs(self):
-        """Adds attributes"""
-        for var in self.xrdata.data_vars:
-            add_attrs(var, self.xrdata)
+    Args:
+        cursor: Cursor positioned at the start of the file.
 
-        for var in self.xrdata.coords:
-            add_attrs(var, self.xrdata)
+    Returns:
+        Dictionary with ``file_code`` and ``n_samples``.
 
-        return self.xrdata
+    Raises:
+        ValueError: If the file code does not identify an ABSCAL.HIS file.
+    """
+    header = {
+        'file_code': int(cursor.read_scalar(_INT)),
+        'n_samples': int(cursor.read_scalar(_INT)),
+    }
+    if header['file_code'] != FILE_CODE_ABSCAL_HIS:
+        raise ValueError(
+            f'{cursor.filename}: unknown file code {header["file_code"]} '
+            f'(expected {FILE_CODE_ABSCAL_HIS}). '
+            'This does not seem to be an RPG ABSCAL.HIS file.')
+    return header
 
-    def read_header(self) -> dict:
-        """Reads the header."""
-        with open(self.filename, 'rb') as file:
-            header = {
-                'file_code': np.fromfile(file, np.int32, 1),
-                '_n_samples': np.fromfile(file, np.int32, 1),
-            }
-            self._file_position = file.tell()
-            file.close()
-        return header
 
-    def read_data(self) -> dict:
-        """Reads the data."""
-        with open(self.filename, 'rb') as file:
-            file.seek(self._file_position)
+def read_record(cursor: _BinaryCursor) -> dict:
+    """Reads one calibration entry.
 
-            data = {
-                'entry_len': np.zeros(self.header['_n_samples'],
-                                      dtype=np.int32).tolist(),
-                'radiometer_id': np.zeros(self.header['_n_samples'],
-                                          dtype=np.int32).tolist(),
-                'cal_type_1': np.zeros(self.header['_n_samples'],
-                                       dtype=np.int32).tolist(),
-                'cal_type_2': np.zeros(self.header['_n_samples'],
-                                       dtype=np.int32).tolist(),
-                'time_of_rec_1': np.zeros(self.header['_n_samples'],
-                                          dtype=np.int32).tolist(),
-                'time_of_rec_2': np.zeros(self.header['_n_samples'],
-                                          dtype=np.int32).tolist(),
-                'Amb_temp_1': np.zeros(self.header['_n_samples'],
-                                       dtype=np.float32).tolist(),
-                'Amb_temp_2': np.zeros(self.header['_n_samples'],
-                                       dtype=np.float32).tolist(),
-                'press_1': np.zeros(self.header['_n_samples'],
-                                    dtype=np.float32).tolist(),
-                'press_2': np.zeros(self.header['_n_samples'],
-                                    dtype=np.float32).tolist(),
+    Args:
+        cursor: Cursor positioned at the start of a record.
 
-                'hot_load_temp_1': np.zeros(self.header['_n_samples'],
-                                            dtype=np.float32).tolist(),
-                'hot_load_temp_2': np.zeros(self.header['_n_samples'],
-                                            dtype=np.float32).tolist(),
-                'cold_load_temp_1': np.zeros(self.header['_n_samples'],
-                                             dtype=np.float32).tolist(),
-                'cold_load_temp_2': np.zeros(self.header['_n_samples'],
-                                             dtype=np.float32).tolist(),
+    Returns:
+        Dictionary with the scalar values and the per-channel arrays of
+        one calibration.
 
-                'Spare': np.zeros((self.header['_n_samples'][0], 5),
-                                  dtype=np.float32).tolist(),
+    Raises:
+        ValueError: If the record length stored in the file does not match
+            the number of bytes read.
+    """
+    entry_len = int(cursor.read_scalar(_INT))
+    start = cursor.position
 
-                'N_rec_1': np.zeros(self.header['_n_samples'],
-                                    dtype=np.int32).tolist(),
-                'Freq_rec_1': np.zeros((self.header['_n_samples'][0], 14),
-                                       dtype=np.float32).tolist(),
-                'N_rec_2': np.zeros(self.header['_n_samples'],
-                                    dtype=np.int32).tolist(),
-                'Freq_rec_2': np.zeros((self.header['_n_samples'][0], 14),
-                                       dtype=np.float32).tolist(),
+    record = {name: cursor.read_scalar(dtype)
+              for name, dtype in _RECORD_SCALARS}
+    record['spare'] = cursor.read(_FLOAT, _N_SPARE)
 
-                'flag': np.zeros((self.header['_n_samples'][0], 28),
-                                 dtype=np.int32).tolist(),
-                'gain': np.zeros((self.header['_n_samples'][0], 28),
-                                 dtype=np.float32).tolist(),
-                'temp_noise': np.zeros((self.header['_n_samples'][0], 28),
-                                       dtype=np.float32).tolist(),
-                'temp_sys': np.zeros((self.header['_n_samples'][0], 28),
-                                     dtype=np.float32).tolist(),
-                'alpha': np.zeros((self.header['_n_samples'][0], 28),
-                                  dtype=np.float32).tolist(),
-            }
+    record['n_rec_1'] = int(cursor.read_scalar(_INT))
+    record['freq_rec_1'] = cursor.read(_FLOAT, record['n_rec_1'])
+    record['n_rec_2'] = int(cursor.read_scalar(_INT))
+    record['freq_rec_2'] = cursor.read(_FLOAT, record['n_rec_2'])
 
-            for sample in range(self.header['_n_samples'][0]):
-                data['entry_len'][sample] = np.fromfile(file, np.int32, 1)
-                data['radiometer_id'][sample] = np.fromfile(file, np.int32, 1)
+    n_channels = record['n_rec_1'] + record['n_rec_2']
+    for name, dtype in _RECORD_CHANNELS:
+        record[name] = cursor.read(dtype, n_channels)
 
-                data['cal_type_1'][sample] = np.fromfile(file, np.int32, 1)
-                data['cal_type_2'][sample] = np.fromfile(file, np.int32, 1)
-                data['time_of_rec_1'][sample] = np.fromfile(file, np.int32, 1)
-                data['time_of_rec_2'][sample] = np.fromfile(file, np.int32, 1)
-                data['Amb_temp_1'][sample] = np.fromfile(file, np.float32, 1)
-                data['Amb_temp_2'][sample] = np.fromfile(file, np.float32, 1)
-                data['press_1'][sample] = np.fromfile(file, np.float32, 1)
-                data['press_2'][sample] = np.fromfile(file, np.float32, 1)
+    if cursor.position - start != entry_len:
+        raise ValueError(
+            f'{cursor.filename}: record at byte {start - 4} has length '
+            f'{cursor.position - start}, but the file states {entry_len}.')
+    return record
 
-                data['hot_load_temp_1'][sample] = np.fromfile(
-                    file, np.float32, 1)
-                data['hot_load_temp_2'][sample] = np.fromfile(
-                    file, np.float32, 1)
-                data['cold_load_temp_1'][sample] = np.fromfile(file,
-                                                               np.float32, 1)
-                data['cold_load_temp_2'][sample] = np.fromfile(file,
-                                                               np.float32, 1)
 
-                data['Spare'][sample] = np.fromfile(file, np.float32, 5)
+def read_raw(filename) -> tuple:
+    """Reads the ABSCAL.HIS file without any conversion.
 
-                data['N_rec_1'][sample] = np.fromfile(file, np.int32, 1)
-                data['Freq_rec_1'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_1'][sample][0]))
-                data['N_rec_2'][sample] = np.fromfile(file, np.int32, 1)
-                data['Freq_rec_2'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_2'][sample][0]))
+    Args:
+        filename: Path of the ABSCAL.HIS file.
 
-                data['flag'][sample] = np.fromfile(
-                    file, np.int32,
-                    int(data['N_rec_1'][sample][0])
-                    + int(data['N_rec_2'][sample][0]))
-                data['gain'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_1'][sample][0])
-                    + int(data['N_rec_2'][sample][0]))
-                data['temp_noise'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_1'][sample][0])
-                    + int(data['N_rec_2'][sample][0]))
-                data['temp_sys'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_1'][sample][0])
-                    + int(data['N_rec_2'][sample][0]))
-                data['alpha'][sample] = np.fromfile(
-                    file, np.float32,
-                    int(data['N_rec_1'][sample][0])
-                    + int(data['N_rec_2'][sample][0]))
+    Returns:
+        Tuple ``(header, records)`` with the header dictionary and a list
+        of one dictionary per calibration entry.
+    """
+    buffer = Path(filename).read_bytes()
+    cursor = _BinaryCursor(buffer, filename)
+    header = read_header(cursor)
+    records = [read_record(cursor) for _ in range(header['n_samples'])]
+    if cursor.position != len(buffer):
+        warnings.warn(
+            f'{filename}: {len(buffer) - cursor.position} unread bytes at the '
+            'end of the file.', stacklevel=2)
+    return header, records
 
-            file.close()
 
-        return data
+def _check_channels(records: list, filename) -> tuple:
+    """Checks that all entries share the same channels.
 
-    def convert_to_xarray(self):
-        """Converts dict to xarray"""
+    Returns:
+        Tuple ``(freq_rec_1, freq_rec_2)`` of the first entry.
+    """
+    first = records[0]
+    for i, record in enumerate(records[1:], start=1):
+        if (record['n_rec_1'], record['n_rec_2']) != (first['n_rec_1'],
+                                                      first['n_rec_2']):
+            raise ValueError(
+                f'{filename}: entry {i} has a different number of channels '
+                f'({record["n_rec_1"]}+{record["n_rec_2"]}) than entry 0 '
+                f'({first["n_rec_1"]}+{first["n_rec_2"]}).')
+        if not (np.allclose(record['freq_rec_1'], first['freq_rec_1'])
+                and np.allclose(record['freq_rec_2'], first['freq_rec_2'])):
+            warnings.warn(
+                f'{filename}: frequencies of entry {i} differ from entry 0. '
+                'The frequencies of entry 0 are used.', stacklevel=3)
+    return first['freq_rec_1'], first['freq_rec_2']
 
-        data_set = xr.Dataset(
-            {
-                'radiometer_id': (['n_samples'],
-                                  np.asarray(
-                                      self.data['radiometer_id'])[:, 0]),
-                'cal_type_1': (['n_samples'],
-                               np.asarray(
-                                   self.data['cal_type_1'])[:, 0]),
-                'cal_type_2': (['n_samples'],
-                               np.asarray(
-                                   self.data['cal_type_2'])[:, 0]),
-                'time_of_rec_1': (['n_samples'],
-                                  np.asarray(
-                                      self.data['time_of_rec_1'])[:, 0]),
-                'time_of_rec_2': (['n_samples'],
-                                  np.asarray(
-                                      self.data['time_of_rec_2'])[:, 0]),
-                'amb_temp_1': (['n_samples'],
-                               np.asarray(
-                                   self.data['Amb_temp_1'])[:, 0]),
-                'amb_temp_2': (['n_samples'],
-                               np.asarray(self.data['Amb_temp_2'])[:, 0]),
-                'press_1': (['n_samples'],
-                            np.asarray(self.data['press_1'])[:, 0]),
-                'press_2': (['n_samples'],
-                            np.asarray(self.data['press_2'])[:, 0]),
 
-                'hot_load_temp_1': (['n_samples'],
-                                    np.asarray(
-                                        self.data['hot_load_temp_1']
-                                    )[:, 0]),
-                'hot_load_temp_2': (['n_samples'],
-                                    np.asarray(
-                                        self.data['hot_load_temp_2']
-                                    )[:, 0]),
-                'cold_load_temp_1': (['n_samples'],
-                                     np.asarray(
-                                         self.data['cold_load_temp_1']
-                                     )[:, 0]),
-                'cold_load_temp_2': (['n_samples'],
-                                     np.asarray(
-                                         self.data['cold_load_temp_2']
-                                     )[:, 0]),
+def records_to_dataset(header: dict, records: list, filename='') -> xr.Dataset:
+    """Converts the raw records into an xarray Dataset with attributes.
 
-                'calibration_flag': (['n_samples', 'freq'],
-                                     np.asarray(self.data['flag'])[:, :]),
-                'gain': (['n_samples', 'freq'],
-                         np.asarray(self.data['gain'])[:, :]),
-                'temp_noise': (['n_samples', 'freq'],
-                               np.asarray(self.data['temp_noise'])[:, :]),
-                'temp_sys': (['n_samples', 'freq'],
-                             np.asarray(self.data['temp_sys'])[:, :]),
-                'alpha': (['n_samples', 'freq'],
-                          np.asarray(self.data['alpha'])[:, :]),
-            },
-            coords={
-                'n_samples': np.arange(self.header['_n_samples'][0]),
+    Args:
+        header: Header dictionary as returned by :func:`read_raw`.
+        records: List of records as returned by :func:`read_raw`.
+        filename: Name of the source file, written to the history attribute.
 
-                # 'freq_rec_1' : np.asarray(self.data['Freq_rec_1'])[0,0,:],
-                # 'freq_rec_2' : np.asarray(self.data['Freq_rec_2'])[0,0,:],
-                'freq': np.concatenate(
-                    (np.asarray(self.data['Freq_rec_1'])[0, :],
-                     np.asarray(self.data['Freq_rec_2'])[0, :]), axis=None),
+    Returns:
+        Dataset with dimensions ``n_samples`` (calibration entries) and
+        ``freq`` (channels).
+    """
+    if not records:
+        raise ValueError(f'{filename}: the file contains no calibration '
+                         'entries.')
+    freq_rec_1, freq_rec_2 = _check_channels(records, filename)
 
-            }
-        )
+    data_vars = {
+        name: (['n_samples'], np.array([rec[name] for rec in records]))
+        for name, _ in _RECORD_SCALARS
+    }
+    data_vars.update({
+        name: (['n_samples', 'freq'],
+               np.stack([rec[name] for rec in records]))
+        for name, _ in _RECORD_CHANNELS
+    })
 
-        return data_set
+    seconds = data_vars['time_of_rec_1'][1].astype('timedelta64[s]')
+    data_set = xr.Dataset(
+        data_vars,
+        coords={
+            'n_samples': np.arange(header['n_samples']),
+            'freq': np.concatenate((freq_rec_1, freq_rec_2)),
+            'time': (['n_samples'],
+                     (TIME_REFERENCE + seconds).astype('datetime64[ns]')),
+            'receiver': (['freq'],
+                         np.repeat(np.int32([1, 2]),
+                                   [len(freq_rec_1), len(freq_rec_2)])),
+        },
+    )
+    data_set['time'].encoding['units'] = 'seconds since 2001-01-01'
 
-    def _get_hatpro_version(self) -> int:
-        """Get HATPRO version"""
-        if self.header['file_code'][0] == 39583209:
-            return 1
-        # if self.header['file_code'][0] == 934501000:
-            # return 2
-        raise ValueError('Unknown HATPRO version.'
-                         + f'{self.header["file_code"][0]}')
+    for var in data_set.variables:
+        add_attrs(var, data_set)
+    add_global_attrs(data_set, filename)
+    return data_set
+
+
+def read_abscal_his(filename) -> xr.Dataset:
+    """Reads an ABSCAL.HIS file into an xarray Dataset.
+
+    Args:
+        filename: Path of the ABSCAL.HIS file.
+
+    Returns:
+        Dataset with the calibration history, see
+        :func:`records_to_dataset`.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+        ValueError: If the file is not a valid ABSCAL.HIS file.
+    """
+    header, records = read_raw(filename)
+    return records_to_dataset(header, records, filename)
+
+
+def write_netcdf(data_set: xr.Dataset, filename) -> None:
+    """Writes the dataset to a NetCDF file."""
+    data_set.to_netcdf(filename)
+
+
+def add_global_attrs(data_set: xr.Dataset, filename='') -> xr.Dataset:
+    """Adds global attributes (in place)."""
+    now = datetime.datetime.now(datetime.timezone.utc)
+    timestamp = now.strftime('%Y-%m-%dT%H:%M:%SZ')
+    data_set.attrs['Conventions'] = 'CF-1.8'
+    data_set.attrs['title'] = ('Absolute calibration history of an RPG '
+                               'microwave radiometer')
+    data_set.attrs['source'] = ('microwave radiometer manufactured by '
+                                'Radiometer Physics GmbH (RPG)')
+    data_set.attrs['history'] = (f'{timestamp}: converted from {filename} '
+                                 f'with eval_ac {__version__}')
+    data_set.attrs['date_created'] = timestamp
+    return data_set
 
 
 def add_attrs(var, data_set):
-    """Loop over attributes"""
+    """Adds the attributes defined in ``ATTRIBUTES`` to variable ``var``."""
     if var in ATTRIBUTES:
-        j = 0
-        for i in ATTRIBUTES[var]:
-            if i is not None:
-                # print(field[j])
-                # print(i)
-                data_set[var].attrs[FIELDS[j]] = i
-            j = j + 1
+        for field, value in zip(FIELDS, ATTRIBUTES[var]):
+            if value is not None:
+                data_set[var].attrs[field] = value
     return data_set
+
+
+class HatproBinAbscalHis:  # pylint: disable=too-few-public-methods
+    """HATPRO ABSCAL.HIS file reader.
+
+    Kept for backwards compatibility. New code should use
+    :func:`read_abscal_his` and :func:`write_netcdf`.
+
+    Args:
+        filename: Path of the ABSCAL.HIS file.
+        filename_out: Optional path of a NetCDF file. If given, the data
+            is written to this file.
+
+    Attributes:
+        header: Header dictionary.
+        data: List of raw records (one dictionary per calibration entry).
+        xrdata: Converted :class:`xarray.Dataset`.
+    """
+
+    def __init__(self, filename, filename_out=None):
+        self.filename = filename
+        self.filename_out = filename_out
+        self.header, self.data = read_raw(filename)
+        self.xrdata = records_to_dataset(self.header, self.data, filename)
+        if filename_out is not None:
+            self.write_nc()
+
+    def write_nc(self, filename_out=None):
+        """Writes the dataset to a NetCDF file."""
+        write_netcdf(self.xrdata, filename_out or self.filename_out)
