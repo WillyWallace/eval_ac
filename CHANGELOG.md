@@ -32,6 +32,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (RPG-MWR-STD-SW): meaning and operational use of G, Tsys, Tn and alpha,
   typical patterns in the drift plot, what to do with a suspicious
   calibration, how to adapt the thresholds and limitations.
+- Tests with modified copies of the example file (other calibration
+  types, flag 0); 40 tests in total.
 
 ### Changed
 - History plot: latest and previous calibration are determined per
@@ -47,8 +49,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   1 = calibrated per channel (RPG manual, appendix A20), not an 8 bit
   array.
 - `alpha`: comment with the detector model and the typical range added.
-- Tests with modified copies of the example file (other calibration
-  types, flag 0); 40 tests in total.
 
 ## [0.2.0] - 2026-10-05
 
