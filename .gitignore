@@ -112,3 +112,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# output of eval-ac when run in the repository root
+/results_ln2_cal.png
