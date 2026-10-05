@@ -157,15 +157,12 @@ def calibration_drift(data_set: xr.Dataset,
         n_reference: Number of calibrations forming the reference.
 
     Returns:
-        Dataset with, for each variable ``var``:
-
-        * ``var_reference`` (freq): reference value,
-        * ``var_deviation`` (n_samples, freq): deviation of every entry from
-          the reference in percent,
-
-        and ``latest_sample`` (freq): position of the latest entry of each
-        channel, ``n_reference_used`` (freq): number of values in the
-        reference.
+        :class:`xarray.Dataset` with, for each analysed variable ``var``,
+        ``var_reference`` (freq) with the reference value and
+        ``var_deviation`` (n_samples, freq) with the deviation of every entry
+        from the reference in percent. In addition, ``latest_sample`` (freq)
+        holds the position of the latest entry of each channel and
+        ``n_reference_used`` (freq) the number of values in the reference.
     """
     flagged = not_calibrated(data_set)
     n_samples, n_freq = data_set.sizes['n_samples'], data_set.sizes['freq']
