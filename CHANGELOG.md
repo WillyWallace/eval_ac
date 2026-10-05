@@ -3,6 +3,63 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.0] - 2026-10-05
+
+### Added
+- Selection of the calibration type: by default only calibrations with
+  liquid nitrogen (`cal_type` = 1) are plotted and analysed. Entries in
+  which no receiver was calibrated with liquid nitrogen are removed; if
+  only one receiver was, the values of the other receiver are set to NaN.
+  CLI option `--all-cal-types` disables the selection. Python:
+  `eval_ac.analysis.select_cal_type()`.
+- Quality flags: channels with `calibration_flag` = 0 (not calibrated) are
+  marked with a red cross in the history plot, excluded from the drift
+  analysis and listed in the report if they belong to the latest
+  calibration. Python: `eval_ac.analysis.latest_not_calibrated()`.
+- Drift analysis: the latest calibration of each receiver is compared with
+  the median of the `N` calibrations before it (deviation in percent).
+  Python: `eval_ac.analysis.calibration_drift()` and
+  `eval_ac.analysis.drift_exceedances()`. Default thresholds: gain 10 %,
+  noise diode temperature 2.5 %, system noise temperature 2.5 %,
+  non-linearity factor 0.5 % (about the 99th percentile of the example
+  data, adapt them to the instrument).
+- Drift plot in the style of the history plot (`results_ln2_drift.png`),
+  Python: `eval_ac.plotting.plot_drift()`.
+- CLI options `-d/--drift-plot`, `--n-reference`, `-t/--threshold
+  VARIABLE=PERCENT` (repeatable), `--max-age DAYS` and
+  `--fail-on-warning` (exit code 2 if the report contains a warning).
+- CLI prints a quality report of the latest calibration of each receiver:
+  date and age, channels with flag 0, alpha out of range and drift.
+- Age check: warning if the latest calibration of a receiver is older than
+  183 days (RPG recommends an absolute calibration every 5 to 6 months,
+  manual section 3.1.3). The age is computed from `time_of_rec_1/2` of the
+  respective receiver. Python: `eval_ac.analysis.calibration_age()`.
+- Range check of the non-linearity factor: warning if alpha of the latest
+  calibration is outside 0.9 <= alpha < 1 (manual section 3.1.3.1).
+  Python: `eval_ac.analysis.alpha_out_of_range()`.
+- README section "Interpreting the results" based on the RPG manual
+  (RPG-MWR-STD-SW): meaning and operational use of G, Tsys, Tn and alpha,
+  typical patterns in the drift plot, what to do with a suspicious
+  calibration, how to adapt the thresholds and limitations.
+- Tests with modified copies of the example file (other calibration
+  types, flag 0, time stamps, alpha); 47 tests in total. The tests do not
+  depend on the current date.
+
+### Changed
+- History plot: latest and previous calibration are determined per
+  receiver, so a receiver that was not calibrated with liquid nitrogen in
+  the latest entry shows its own latest calibration.
+- History plot: one legend per receiver below the panels instead of one in
+  every panel, so that the legend never hides data.
+- `--no-plot` now suppresses both plots.
+- The NetCDF file (`--netcdf`) still contains all calibration types.
+
+### Fixed
+- `calibration_flag` comment: the flag is 0 = not calibrated,
+  1 = calibrated per channel (RPG manual, appendix A20), not an 8 bit
+  array.
+- `alpha`: comment with the detector model and the valid range added.
+
 ## [0.2.0] - 2026-10-05
 
 ### Added
@@ -61,7 +118,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `long_name` of `cold_load_temp_1/2` said "hot load".
 - Invalid CF `standard_name` "reveiver gain" of `gain` removed.
 - Unit of the non-linearity factor `alpha` changed from `K` to `1`
-  (dimensionless, values around 0.97). Please verify with the RPG manual.
+  (dimensionless).
 - Typo "micorwave" in the `source` attribute.
 - `datetime.utcnow()` (deprecated since Python 3.12) replaced.
 - `datetime` removed from the dependencies (it is part of the standard
