@@ -3,7 +3,7 @@
 Read the `ABSCAL.HIS` file of RPG microwave radiometers (e.g. HATPRO), plot the history of the absolute calibration with liquid nitrogen and check the latest calibration for drift and other problems.
 
 ```sh
-pip install git+https://github.com/WillyWallace/eval_ac.git
+pip install eval-ac
 eval-ac ABSCAL.HIS
 ```
 

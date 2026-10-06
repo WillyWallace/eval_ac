@@ -3,6 +3,13 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+- Installation from PyPI (`pip install eval-ac`) in README and
+  documentation; PyPI badges; roadmap updated.
+- Python version classifiers 3.9-3.12 in the package metadata.
+
 ## [0.3.1] - 2026-10-06
 
 ### Added
