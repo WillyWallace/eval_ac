@@ -1,5 +1,7 @@
 [![Python package](https://github.com/WillyWallace/eval_ac/actions/workflows/python-package.yml/badge.svg)](https://github.com/WillyWallace/eval_ac/actions/workflows/python-package.yml)
 [![Pylint](https://github.com/WillyWallace/eval_ac/actions/workflows/pylint.yml/badge.svg)](https://github.com/WillyWallace/eval_ac/actions/workflows/pylint.yml)
+[![PyPI version](https://img.shields.io/pypi/v/eval-ac.svg)](https://pypi.org/project/eval-ac/)
+[![Python versions](https://img.shields.io/pypi/pyversions/eval-ac.svg)](https://pypi.org/project/eval-ac/)
 [![Documentation Status](https://readthedocs.org/projects/eval-ac/badge/?version=latest)](https://eval-ac.readthedocs.io/en/latest/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Github all releases](https://img.shields.io/github/downloads/WillyWallace/eval_ac/total.svg)](https://github.com/WillyWallace/eval_ac/releases/)
@@ -8,7 +10,6 @@
 ![Mastodon Follow](https://img.shields.io/mastodon/follow/109461236453474330?domain=https%3A%2F%2Fmeteo.social&logoColor=%230066cc&style=social)
 
 <!-- [![Release][release-shield]][release-url] -->
-<!-- [![PyPi version](https://badgen.net/pypi/v/pip/)](https://pypi.com/project/pip) -->
 
 <!-- [![Twitter](https://img.shields.io/twitter/follow/RSAtmos_LIM?style=for-the-badge)](https://twitter.com/RSAtmos_LIM) -->
 
@@ -42,22 +43,19 @@ This repository was created to display the results of the absolute calibration w
 ### Installation
 
 <!-- docs-installation-start -->
-eval_ac requires Python 3.9 or newer. The dependencies (numpy, xarray, matplotlib, netCDF4) are installed automatically.
+eval_ac requires Python 3.9 or newer. Install it from [PyPI](https://pypi.org/project/eval-ac/); the dependencies (numpy, xarray, matplotlib, netCDF4) are installed automatically:
 
-1. Clone the repo
-   ```sh
-   git clone https://github.com/WillyWallace/eval_ac.git
-   cd eval_ac
-   ```
+```sh
+pip install eval-ac
+```
 
-2. Install the package
-   ```sh
-   pip install .
-   ```
-   For development (editable install with test and lint tools):
-   ```sh
-   pip install -e ".[dev]"
-   ```
+For development, clone the repository and install it in editable mode with the test, lint and documentation tools:
+
+```sh
+git clone https://github.com/WillyWallace/eval_ac.git
+cd eval_ac
+pip install -e ".[dev]"
+```
 <!-- docs-installation-end -->
 
 <p align="right">(<a href="#top">back to top</a>)</p>
@@ -235,7 +233,7 @@ pytest
 - [x] make documentation with Sphinx (`docs/`)
 - [x] host the documentation on readthedocs
 - [x] enable pip install ...
-- [ ] publish on PyPI
+- [x] publish on PyPI
 - [ ] Released version 1
 - [x] Add Tests
 
