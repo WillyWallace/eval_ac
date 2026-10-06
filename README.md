@@ -1,5 +1,6 @@
 [![Python package](https://github.com/WillyWallace/eval_ac/actions/workflows/python-package.yml/badge.svg)](https://github.com/WillyWallace/eval_ac/actions/workflows/python-package.yml)
 [![Pylint](https://github.com/WillyWallace/eval_ac/actions/workflows/pylint.yml/badge.svg)](https://github.com/WillyWallace/eval_ac/actions/workflows/pylint.yml)
+[![Documentation Status](https://readthedocs.org/projects/eval-ac/badge/?version=latest)](https://eval-ac.readthedocs.io/en/latest/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Github all releases](https://img.shields.io/github/downloads/WillyWallace/eval_ac/total.svg)](https://github.com/WillyWallace/eval_ac/releases/)
 [![Open Source? Yes!](https://badgen.net/badge/Open%20Source%20%3F/Yes%21/blue?icon=github)](https://github.com/Naereen/badges/)
@@ -108,7 +109,7 @@ eval-ac example_data/ABSCAL.HIS
 
 The plot shows the receiver gain, the noise diode temperature, the system noise temperature and the non-linearity factor of both receivers. The latest and the previous calibration of each receiver are highlighted with their dates, all older calibrations are drawn in grey. Channels that were not calibrated (`calibration_flag` = 0) are marked with a red cross. By default, only calibrations with liquid nitrogen are used (`cal_type` = 1); if only one receiver of an entry was calibrated with liquid nitrogen, only this receiver is used.
 
-![History plot of the example data](docs/images/results_ln2_cal.png)
+![History plot of the example data](https://raw.githubusercontent.com/WillyWallace/eval_ac/main/docs/images/results_ln2_cal.png)
 
 #### Drift plot
 
@@ -116,7 +117,7 @@ For each receiver, the latest calibration is compared with the median of the 5 c
 
 The y-axis is scaled to the thresholds and to the latest and previous calibration. Large outliers of older calibrations are therefore cut off at the edge of the panel; they are still visible in the history plot.
 
-![Drift plot of the example data](docs/images/results_ln2_drift.png)
+![Drift plot of the example data](https://raw.githubusercontent.com/WillyWallace/eval_ac/main/docs/images/results_ln2_drift.png)
 
 #### Quality checks
 
@@ -232,13 +233,13 @@ pytest
 
 - [x] add meaningful docstrings
 - [x] make documentation with Sphinx (`docs/`)
-- [ ] host the documentation on readthedocs
+- [x] host the documentation on readthedocs
 - [x] enable pip install ...
 - [ ] publish on PyPI
 - [ ] Released version 1
 - [x] Add Tests
 
-See the [open issues](https://github.com/WillyWallace/eval_ac/issues) for a full list of proposed features (and known issues) and [CHANGELOG.md](CHANGELOG.md) for the changes of each version.
+See the [open issues](https://github.com/WillyWallace/eval_ac/issues) for a full list of proposed features (and known issues) and [CHANGELOG.md](https://github.com/WillyWallace/eval_ac/blob/main/CHANGELOG.md) for the changes of each version.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 

@@ -1,0 +1,5 @@
+# files of the source distribution (sdist) in addition to the package,
+# so that the tests can be run from the sdist
+include CHANGELOG.md
+recursive-include tests *.py
+include example_data/ABSCAL.HIS example_data/abscal.nc

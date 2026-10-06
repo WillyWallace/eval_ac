@@ -1,0 +1,76 @@
+# Builds the package and publishes it with trusted publishing (no tokens):
+# - a published GitHub release uploads to PyPI,
+# - "Run workflow" in the Actions tab uploads to TestPyPI (for testing).
+# The trusted publishers have to be registered once on pypi.org and
+# test.pypi.org (workflow "publish.yml", environments "pypi" / "testpypi").
+
+name: Publish
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install build tools
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install build twine
+    - name: Check that the release tag matches the package version
+      if: github.event_name == 'release'
+      run: |
+        version=$(grep -oP '__version__ = "\K[^"]+' eval_ac/__init__.py)
+        if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+          echo "::error::release tag ${GITHUB_REF_NAME} does not match package version v${version}"
+          exit 1
+        fi
+    - name: Build sdist and wheel
+      run: |
+        python -m build
+        twine check --strict dist/*
+    - uses: actions/upload-artifact@v4
+      with:
+        name: dist
+        path: dist/
+
+  publish-testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/eval-ac
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    if: github.event_name == 'release'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/eval-ac
+    permissions:
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist/
+    - uses: pypa/gh-action-pypi-publish@release/v1
