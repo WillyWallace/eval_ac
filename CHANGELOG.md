@@ -16,11 +16,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Extra `docs` in `pyproject.toml`; the extra `dev` contains the
   documentation tools as well.
 - CI job that builds the documentation with warnings as errors.
+- Workflow `publish.yml`: a published GitHub release uploads the package
+  to PyPI, "Run workflow" uploads it to TestPyPI, both with trusted
+  publishing (no stored tokens). The workflow checks that the release tag
+  matches the package version.
+- `MANIFEST.in`: the source distribution contains the tests, their
+  example data and the changelog, so that the tests can be run from it.
+- Documentation page "Releasing" with the one-time setup of PyPI and the
+  release steps.
+- README: badge of the documentation build.
 
 ### Changed
 - README: images as Markdown instead of HTML (needed for the
   documentation; on GitHub they are now shown in full width), markers for
   the sections included in the documentation, link to the documentation.
+- README: images and the changelog link use absolute GitHub URLs, so that
+  they are also shown in the project description on PyPI.
 
 ### Fixed
 - Docstring of `calibration_drift()`: the return value was rendered as

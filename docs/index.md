@@ -15,6 +15,7 @@ usage
 python
 file_format
 changelog
+releasing
 ```
 
 The source code is on [GitHub](https://github.com/WillyWallace/eval_ac). eval_ac is developed by Andreas Foth (Leipzig University) and distributed under the MIT license.
