@@ -9,6 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - Installation from PyPI (`pip install eval-ac`) in README and
   documentation; PyPI badges; roadmap updated.
 - Python version classifiers 3.9-3.12 in the package metadata.
+- Installation in a conda environment documented in README and
+  documentation.
+- CI: Python 3.9 is tested on Ubuntu 24.04, because it is not available
+  for Ubuntu 26.04 (`ubuntu-latest`) any more. GitHub actions updated to
+  versions running on Node.js 24 (checkout v7, setup-python v7,
+  upload-artifact v7, download-artifact v8).
 
 ## [0.3.1] - 2026-10-06
 

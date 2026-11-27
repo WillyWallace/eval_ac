@@ -43,13 +43,25 @@ This repository was created to display the results of the absolute calibration w
 ### Installation
 
 <!-- docs-installation-start -->
-eval_ac requires Python 3.9 or newer. Install it from [PyPI](https://pypi.org/project/eval-ac/); the dependencies (numpy, xarray, matplotlib, netCDF4) are installed automatically:
+eval_ac requires Python 3.9 or newer and is installed from [PyPI](https://pypi.org/project/eval-ac/). The dependencies (numpy, xarray, matplotlib, netCDF4) are installed automatically.
+
+#### With pip
 
 ```sh
 pip install eval-ac
 ```
 
-For development, clone the repository and install it in editable mode with the test, lint and documentation tools:
+#### With conda
+
+eval_ac is not available as a conda package. Install it with pip into the activated conda environment; the environment needs Python 3.9 or newer (check with `python --version`):
+
+```sh
+pip install eval-ac
+```
+
+#### For development
+
+Clone the repository and install it in editable mode with the test, lint and documentation tools:
 
 ```sh
 git clone https://github.com/WillyWallace/eval_ac.git
