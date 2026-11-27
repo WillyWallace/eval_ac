@@ -53,23 +53,11 @@ pip install eval-ac
 
 #### With conda
 
-eval_ac is not available as a conda package, but it can be installed with pip into a conda environment. A separate environment is recommended, in particular if your usual environment has a Python version older than 3.9 (check with `python --version`):
+eval_ac is not available as a conda package. Install it with pip into the activated conda environment; the environment needs Python 3.9 or newer (check with `python --version`):
 
 ```sh
-conda create -n eval_ac python=3.12
-conda activate eval_ac
 pip install eval-ac
-eval-ac --version
 ```
-
-Afterwards, activate the environment before each use:
-
-```sh
-conda activate eval_ac
-eval-ac path/to/ABSCAL.HIS
-```
-
-Update to a new version with `pip install -U eval-ac` in the activated environment. If packages installed with `pip install --user` (in `~/.local`) interfere with the environment, run pip and eval-ac with `PYTHONNOUSERSITE=1`.
 
 #### For development
 
