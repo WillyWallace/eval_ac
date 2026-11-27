@@ -3,7 +3,7 @@
 All notable changes to this project are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.3.2] - 2026-11-27
 
 ### Changed
 - Installation from PyPI (`pip install eval-ac`) in README and
@@ -15,6 +15,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   for Ubuntu 26.04 (`ubuntu-latest`) any more. GitHub actions updated to
   versions running on Node.js 24 (checkout v7, setup-python v7,
   upload-artifact v7, download-artifact v8).
+
+### Fixed
+- Test without unit for `numpy.timedelta64`, which is deprecated in numpy
+  2.5 and will be an error in future versions.
 
 ## [0.3.1] - 2026-10-06
 
