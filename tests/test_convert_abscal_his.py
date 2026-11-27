@@ -32,7 +32,7 @@ def test_time_is_decoded(abscal_his):
     data_set = read_abscal_his(abscal_his)
     assert data_set['time'].values[0] == np.datetime64('2018-08-22T07:31:25')
     assert data_set['time'].values[-1] == np.datetime64('2026-04-29T09:32:38')
-    assert np.all(np.diff(data_set['time'].values) > np.timedelta64(0))
+    assert np.all(np.diff(data_set['time'].values) > np.timedelta64(0, 's'))
 
 
 def test_matches_reference(abscal_his, reference_nc):
